@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Social Work Methods II (Groups) — SWLE Practice Quiz (100 situational items)</title>
+<style>
+  :root{
+    --bg:#f7fafc; --card:#ffffff; --accent:#0b63d6; --muted:#6b7280; --good:#0f9d58; --bad:#d93025;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111;}
+  header{background:linear-gradient(90deg,#093c9f22,transparent);padding:14px 16px;border-bottom:1px solid #e6eef8;}
+  .wrap{max-width:980px;margin:18px auto;padding:12px;}
+  .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:18px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,input[type="number"]{padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+  button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 18px rgba(11,99,214,0.06)}
+  .meta{font-size:13px;color:var(--muted)}
+  .question-area{display:flex;gap:12px;flex-direction:column}
+  .qtext{font-weight:600;padding:8px 0;font-size:16px}
+  .choices{display:grid;gap:10px}
+  .choice{padding:12px;border-radius:10px;border:1px solid #e6eef8;background:#fbfdff;cursor:pointer;display:flex;gap:10px;align-items:center}
+  .choice:hover{background:#f0f8ff}
+  .choice .label{font-weight:700;width:22px;height:22px;border-radius:6px;background:#eef6ff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+  .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stats{font-size:13px;color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .hide{display:none}
+  .results{margin-top:16px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:13px}
+  .correct{color:var(--good);font-weight:700}
+  .incorrect{color:var(--bad);font-weight:700}
+  .domain-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+  .timer{font-weight:700}
+  @media (max-width:640px){
+    .top{flex-direction:column;align-items:flex-start}
+    .controls{width:100%}
+    .footer{flex-direction:column;align-items:flex-start}
+  }
+  .question-count{background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e6eef8}
+  .review-list{max-height:520px;overflow:auto}
+  .rationale{font-size:13px;color:var(--muted);margin-top:6px}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+  .tile{padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eef2f7}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1>Social Work Methods II (Working with Groups) — SWLE Practice (100)</h1>
+      <div class="meta">Situational Philippine items — interactive, single-file quiz</div>
+    </div>
+    <div class="controls">
+      <label class="small">Items:
+        <select id="numItems"><option>20</option><option>50</option><option selected>100</option><option>200</option><option>All</option></select>
+      </label>
+      <label class="small">Domain:
+        <select id="domainFilter">
+          <option value="ALL">ALL DOMAINS</option>
+          <option value="A">Historical development & trends</option>
+          <option value="B">Group classifications & types</option>
+          <option value="C">Definition, purposes & uses</option>
+          <option value="D">Foundations & theories</option>
+          <option value="E">Phases of group development & helping process</option>
+          <option value="F">Intervention models & approaches</option>
+          <option value="G">Recordings, supervision & field instruction</option>
+        </select>
+      </label>
+      <label class="small">Timer mode:
+        <select id="timerMode"><option value="none">None (no limit)</option><option value="elapsed" selected>Elapsed</option><option value="countdown">Countdown</option></select>
+      </label>
+      <label class="small" id="countdownInput" style="display:none">Duration (mins):
+        <input type="number" id="countdownMins" min="1" value="120" style="width:88px">
+      </label>
+      <button id="startBtn">Start Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupCard" class="card">
+    <div class="meta">Select items and domain. Questions are situational, Philippine context and exam-level difficulty.</div>
+  </div>
+
+  <div id="quizCard" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <span id="domainBadge" class="domain-badge">ALL DOMAINS</span>
+        <span class="question-count">Q <span id="currentIndex">1</span> / <span id="totalIndex">100</span></span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="timer">Time: <span id="timerDisplay">00:00:00</span></div>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="quitBtn" class="secondary">Quit</button>
+      </div>
+    </div>
+
+    <div class="question-area" style="margin-top:12px">
+      <div id="qDomain" class="meta small">Domain: <strong id="qDomainText"></strong></div>
+      <div id="qText" class="qtext">Question text</div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="footer">
+      <div class="stats">Answered: <span id="answeredCount">0</span> | Remaining: <span id="remainingCount">0</span></div>
+      <div>
+        <button id="prevBtn" class="secondary">Prev</button>
+        <button id="nextBtn" class="secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h3>Results</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div style="margin-top:8px;font-size:14px">
+      <strong>Overall Score:</strong> <span id="overallScore"></span> / <span id="overallTotal"></span>
+      &nbsp; • &nbsp; <strong>Time Spent:</strong> <span id="timeSpent"></span>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Per-domain breakdown</h4>
+      <div id="domainBreakdown"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Review — All Questions</h4>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="restartBtn">Restart & Shuffle</button>
+      <button id="downloadBtn" class="secondary">Download Results (JSON)</button>
+    </div>
+  </div>
+
+  <div id="notes" class="card" style="margin-top:12px">
+    <strong>Notes</strong>
+    <ul>
+      <li class="small">Click a choice to record and auto-advance. Pause/resume the timer as needed.</li>
+      <li class="small">All data stays local to your browser unless you download results.</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+/* Question bank: 100 situational items for Social Work Methods II (Groups)
+Domains:
+A - Historical development & trends
+B - Group classifications & types
+C - Definition, purposes & uses of social groupwork
+D - Knowledge & philosophical foundations (theories, values)
+E - Phases of group development & helping process
+F - Intervention models & approaches
+G - Groupwork recordings, supervision & field instruction
+Each question: id, domain, question, choices[4], answer (index 0-3), rationale (1-3 sentences)
+*/
+
+/* NOTE: Situational items reflect Philippine contexts (barangay, schools, NGOs, correctional settings, OFWs, disaster response, etc.) */
+const QUESTIONS = [
+/* 1-15 A: Historical development & trends (15 items) */
+{ id:1, domain:'A', question:"A barangay social worker explains to youth leaders the origins of groupwork practice in the Philippines. Which historical point should the worker emphasize as foundational to Filipino group practice?",
+  choices:["A. Groupwork began only after WWII in the Philippines","B. Early community mutual-aid traditions and later institutionalized settlement houses and community centers influenced local groupwork","C. Groupwork is exclusively a Western import with no local roots","D. Groupwork originated from corporate team-building programs"], answer:1,
+  rationale:"Filipino groupwork draws on indigenous mutual-aid practices and was later shaped by institutionalized community centers and settlement movements adapted locally."},
+
+{ id:2, domain:'A', question:"A trainer teaches the historical shift in groupwork purposes from socialization to developmental practice. What practical implication does this shift have for contemporary barangay programs?",
+  choices:["A. Focus only on recreation activities","B. Emphasize empowerment, capacity building, and community development rather than just social control","C. Reduce group sessions to lectures","D. Prioritize charity over participation"], answer:1,
+  rationale:"Developmental practice prioritizes empowerment and capacity-building to address structural and collective needs, a shift from purely socializing roles."},
+
+{ id:3, domain:'A', question:"A thesis student asks whether the rise of digital groups changes traditional groupwork. What trend-based recommendation should the student consider?",
+  choices:["A. Digital groups make face-to-face groups obsolete","B. Hybrid approaches that blend online facilitation with in-person activities can expand reach while maintaining cohesion","C. Never use technology in groupwork","D. Use technology only for entertainment"], answer:1,
+  rationale:"Hybrid models leverage reach and convenience of digital platforms while preserving the depth and trust of in-person group processes."},
+
+{ id:4, domain:'A', question:"A community center wants to modernize its groupwork offerings. Based on recent trends, which adaptation is most appropriate?",
+  choices:["A. Keep only traditional formats","B. Incorporate trauma-informed approaches and digital engagement while retaining participatory values","C. Replace all groupwork with social media campaigns","D. Focus solely on fundraising events"], answer:1,
+  rationale:"Modern groupwork integrates trauma-informed practice and technology while preserving participatory and empowerment-based values."},
+
+{ id:5, domain:'A', question:"A social work class discusses global influences on Philippine groupwork. Which statement recognizes appropriate adaptation of international models?",
+  choices:["A. Apply international models without change","B. Adapt international groupwork principles to local cultural norms like pakikisama and hiya","C. Reject all international theory","D. Prioritize international branding"], answer:1,
+  rationale:"Adapting global models to local cultural contexts ensures relevance and acceptance in Filipino group settings."},
+
+{ id:6, domain:'A', question:"A barangay group used to be primarily recreational but now focuses on livelihood formation. What historical development explains this evolution?",
+  choices:["A. Random change only","B. The expansion of social development and empowerment functions in groupwork responding to poverty and livelihood needs","C. Groups always focused on livelihood","D. Groups no longer serve social functions"], answer:1,
+  rationale:"Groupwork evolved from leisure/socialization to development and livelihood because of community demand and broader social development agendas."},
+
+{ id:7, domain:'A', question:"A research report links the institutionalization of NGOs with the growth of formal groupwork. What is a key programmatic effect of this institutionalization?",
+  choices:["A. Less community involvement","B. More structured training, documented methods, and opportunities for scaling group interventions","C. Disappearance of informal groups","D. Replacement of groups by individual casework"], answer:1,
+  rationale:"Institutionalization brings resources, training, and systems that can professionalize and scale groupwork while still engaging communities."},
+
+{ id:8, domain:'A', question:"A trainer explains the historical influence of settlement houses on groupwork practice. Which core element from settlement models remains relevant in community groupwork today?",
+  choices:["A. Top-down control","B. Community-based services, neighborhood focus, and multi-disciplinary collaboration","C. Exclusive clinical services","D. Commercialization"], answer:1,
+  rationale:"Settlement models emphasized neighborhood-based, integrated services and collaboration, foundational to community-oriented groupwork."},
+
+{ id:9, domain:'A', question:"A field instructor asks why groupwork regained attention during disaster recovery. Which rationale fits historical and practical reasons?",
+  choices:["A. Groups are cheaper than individuals always","B. Groups mobilize social capital, mutual aid and collective coping which are crucial for community recovery","C. Groups replace government services","D. Groups only provide entertainment"], answer:1,
+  rationale:"Group processes enhance collective coping, resource-sharing, and community mobilization—key in disaster contexts."},
+
+{ id:10, domain:'A', question:"A policy brief links the evolution of groupwork to social movements. Which relationship is most accurate?",
+  choices:["A. Groupwork undermines social movements","B. Groupwork can create organized collective capacities that feed community mobilization and social movements","C. Social movements replace groupwork entirely","D. There is no connection"], answer:1,
+  rationale:"Group-building can strengthen civic capacities and leadership that are foundational to organizing and movements."},
+
+{ id:11, domain:'A', question:"A student wonders whether the feminist critique changed groupwork practice in the Philippines. Which change is a likely consequence?",
+  choices:["A. No change at all","B. Increased attention to power relations, gender-sensitive facilitation, and inclusive decision-making in groups","C. Exclusive focus on men","D. Removal of women from groups"], answer:1,
+  rationale:"Feminist perspectives emphasize power, gender dynamics, and inclusive practices, which reshaped facilitation and participation."},
+
+{ id:12, domain:'A', question:"A municipality considers adopting peer-support groups for mental health. Which historical lesson supports using peer-led models?",
+  choices:["A. Only professionals can lead groups effectively","B. Peer support has long shown effectiveness in mutual aid traditions and can complement professional services when well-structured","C. Peers are always untrained and harmful","D. Peer groups cannot be monitored"], answer:1,
+  rationale:"Peer models build community ownership and mutual support while working alongside professional oversight and linkages."},
+
+{ id:13, domain:'A', question:"A lecturer maps the timeline of groupwork models. What pedagogical point is important for students to understand historically?",
+  choices:["A. Models are static and unchanging","B. Models evolved in response to social needs; students should learn how context shapes model choice","C. Only one model is correct","D. Historical models are irrelevant"], answer:1,
+  rationale:"Understanding how models emerged helps students match approaches to contemporary social needs and contexts."},
+
+{ id:14, domain:'A', question:"A community center wants to document local groupwork history for advocacy. Which method is appropriate and respectful?",
+  choices:["A. Ignore community memory","B. Oral histories with elder members, participatory documentation, and archiving of group processes","C. Use only external reports","D. Publish sensitive materials without consent"], answer:1,
+  rationale:"Participatory oral history preserves local knowledge ethically and supports advocacy rooted in community voices."},
+
+{ id:15, domain:'A', question:"A youth organizer argues that modern groupwork must be agile. What organizational practice reflects agility while honoring groupwork values?",
+  choices:["A. Frequent top-down directives","B. Iterative program design, participatory feedback loops, and flexible facilitation methods","C. Rigid annual planning only","D. Eliminating reflection sessions"], answer:1,
+  rationale:"Agile practice uses feedback and iteration while keeping participatory values central to group work."},
+
+/* 16-30 B: Group classifications & types (15 items) */
+{ id:16, domain:'B', question:"A barangay social worker is deciding between forming a support group or a skills training group for adolescent mothers. What distinction should guide the choice?",
+  choices:["A. Support groups are for financial skills only","B. Support groups prioritize mutual aid and emotional support; skills training focuses on skill acquisition and certification","C. Both are identical in purpose","D. Skills groups never build support"], answer:1,
+  rationale:"Support groups concentrate on shared emotional and social needs, while skills groups target practical competencies and livelihoods."},
+
+{ id:17, domain:'B', question:"A trainer explains primary vs. secondary groups. Which example is a primary group relevant to social work practice?",
+  choices:["A. National NGO network","B. Family or close peer group characterized by intimate, enduring relationships","C. Temporary steering committee","D. Anonymous online forum"], answer:1,
+  rationale:"Primary groups are characterized by close interpersonal ties and are central to identity and social support."},
+
+{ id:18, domain:'B', question:"A health clinic forms task groups to revise immunization outreach. Which characteristic distinguishes task groups from treatment groups?",
+  choices:["A. Task groups focus on collective action and problem-solving for specific tasks; treatment groups address personal change and coping","B. Task groups are always larger","C. Treatment groups never have goals","D. Task groups avoid planning"], answer:0,
+  rationale:"Task groups are goal-oriented around specific objectives, while treatment groups focus on therapeutic change among members."},
+
+{ id:19, domain:'B', question:"A social worker needs to select group members. When is a homogeneous group preferable?",
+  choices:["A. When diverse perspectives are required","B. When members share a common issue and require mutual identification and focused skill-building","C. Homogeneity is never beneficial","D. Only for large public forums"], answer:1,
+  rationale:"Homogeneous groups can facilitate shared understanding and targeted interventions for specific client needs."},
+
+{ id:20, domain:'B', question:"A correctional facility plans to form therapy groups. Which typology fits best for treating aggression?",
+  choices:["A. Task-centered group","B. Remedial or psychotherapy-oriented treatment group focusing on behavior change","C. Social-goal group only","D. Administrative committee"], answer:1,
+  rationale:"Remedial treatment groups are designed to address and change problematic behaviors such as aggression."},
+
+{ id:21, domain:'B', question:"An NGO plans both formed (structured) and natural (community) groups. Which advantage do natural groups offer?",
+  choices:["A. Easier control by facilitators","B. Pre-existing trust, sustainability, and direct community relevance","C. Immediate funding eligibility only","D. More formal reporting requirements"], answer:1,
+  rationale:"Natural groups already have relationships and social capital that foster sustainability and contextual relevance."},
+
+{ id:22, domain:'B', question:"A group facilitator is designing activities for a small group. Which small-group characteristic is important to account for?",
+  choices:["A. Small groups always need strict rules","B. Interdependence among members and influence of group norms on individual behavior","C. Members act independently of group processes","D. Size never affects dynamics"], answer:1,
+  rationale:"Small-group dynamics operate through interdependence and norms that significantly shape member behavior."},
+
+{ id:23, domain:'B', question:"A community of practice for teachers is an example of which group type?",
+  choices:["A. Primary family group","B. Task or learning group focused on professional development and mutual aid","C. Treatment group for clinical therapy","D. Political rally"], answer:1,
+  rationale:"Communities of practice are learning-oriented groups where members share knowledge and improve practice collectively."},
+
+{ id:24, domain:'B', question:"A social worker needs to form a support group for survivors of typhoon trauma. Which group size is generally recommended for therapeutic group work?",
+  choices:["A. 2 members only","B. 6–12 members to balance intimacy and diversity","C. 50 members or more","D. 25–30 members is ideal"], answer:1,
+  rationale:"Therapeutic groups commonly use sizes around 6–12 to allow participation yet maintain varied perspectives."},
+
+{ id:25, domain:'B', question:"An online peer group for OFW families shows rapid member turnover. Which feature of online groups likely contributes to low retention?",
+  choices:["A. High personal investment and accountability","B. Lower relational depth, time-zone barriers, and limited in-person bonding","C. Excessive face-to-face contact","D. Too much structured supervision"], answer:1,
+  rationale:"Online groups often lack sustained relational depth and face logistical barriers that reduce retention compared to in-person groups."},
+
+{ id:26, domain:'B', question:"A facilitator notices subgrouping or cliques within a larger group. Which classification phenomenon is this an example of?",
+  choices:["A. Primary group formation","B. In-group/out-group differentiation affecting cohesion and dynamics","C. Ideal group cohesion unaffected by subgroups","D. Only negative outcome in all cases"], answer:1,
+  rationale:"Cliques form subgroups that create in-group/out-group dynamics, impacting overall group functioning and inclusion."},
+
+{ id:27, domain:'B', question:"A task force with rotating membership is best classified as which group type?",
+  choices:["A. Natural primary group","B. Task or project group with instrumental purpose and temporary membership","C. Permanent treatment group","D. Family group"], answer:1,
+  rationale:"Task groups are temporary, purpose-driven with membership organized to accomplish specific tasks."},
+
+{ id:28, domain:'B', question:"A training on 'formed' vs 'unformed' groups emphasizes pre-group planning. Which is a defining feature of a formed group?",
+  choices:["A. No structure and random membership","B. Intentional membership selection, explicit goals, planned sessions and facilitation","C. Completely unstructured community gatherings","D. Permanent family ties"], answer:1,
+  rationale:"Formed groups are intentionally constituted with agreed goals and planned processes under facilitation."},
+
+{ id:29, domain:'B', question:"A group leader must decide whether a psychoeducation group is appropriate. Which client need indicates psychoeducation is suitable?",
+  choices:["A. Need for legal advocacy only","B. Need for accurate information, coping strategies, and skill-building (e.g., parenting, mental health literacy)","C. Only community mobilization needs","D. Only emergency shelter needs"], answer:1,
+  rationale:"Psychoeducation addresses information, coping, and skill needs—appropriate when knowledge and skills are primary gaps."},
+
+{ id:30, domain:'B', question:"A facilitator is forming a 'mutual aid' group. Which expectation is central to mutual-aid groups?",
+  choices:["A. Client dependency on the worker","B. Reciprocity, shared responsibility, and mutual emotional and practical support among members","C. Only professional expert input","D. Hierarchical decision-making"], answer:1,
+  rationale:"Mutual aid relies on reciprocal helping and shared responsibilities to strengthen collective support."},
+
+/* 31-45 C: Definition, purposes & uses (15 items) */
+{ id:31, domain:'C', question:"A barangay council asks what makes groupwork distinct from individual casework. What core difference should the social worker highlight?",
+  choices:["A. Groupwork focuses solely on legal issues","B. Groupwork harnesses group interaction as the primary agent of change, using peer support and group processes","C. Individual casework is always faster","D. Groupwork is only recreational"], answer:1,
+  rationale:"Groupwork utilizes group dynamics and mutual aid as mechanisms for change, which is different from individual-focused interventions."},
+
+{ id:32, domain:'C', question:"A worker plans a group to reduce social isolation among elderly. Which primary purpose aligns with groupwork theory?",
+  choices:["A. Only provide medications","B. Promote social integration, mutual support, and meaningful activity to improve psychosocial functioning","C. Encourage dependency on staff","D. Replace family contact"], answer:1,
+  rationale:"Groups for elderly aim to build social networks and engagement, reducing isolation through mutual support activities."},
+
+{ id:33, domain:'C', question:"A training manual asks when groups serve as 'means, target, and agent of change.' Which example illustrates 'agent of change'?",
+  choices:["A. Group used only to collect data","B. A group that mobilizes community action and influences local policy","C. Group functioning as mere target for therapy","D. Group that only observes other groups"], answer:1,
+  rationale:"Agent of change means the group itself mobilizes action, advocacy, or social transformation beyond individual outcomes."},
+
+{ id:34, domain:'C', question:"During program design, which use of groups is best for building community leadership?",
+  choices:["A. Short entertainment sessions only","B. Developmental group approaches focusing on leadership training and capacity-building","C. Only material distribution sessions","D. Closed clinical therapy groups"], answer:1,
+  rationale:"Developmental group models explicitly aim to cultivate leadership and community capacities over time."},
+
+{ id:35, domain:'C', question:"A facilitator is asked why groups have written session plans. What is the primary purpose of a session plan?",
+  choices:["A. Legal compliance only","B. Ensure purposeful sequencing, clear objectives, and appropriate selection of media and techniques","C. For display only","D. To limit creativity always"], answer:1,
+  rationale:"Session plans guide objectives, methods, and sequencing to ensure sessions meet group goals effectively."},
+
+{ id:36, domain:'C', question:"A community health group integrates extra-group activities. What is an 'extra-group activity' and why is it used?",
+  choices:["A. Activities outside the group like community outreach to extend impact and practice skills in real contexts","B. Extra activities that replace group meetings entirely","C. Social media posts only","D. Only fundraising events"], answer:0,
+  rationale:"Extra-group activities connect group learning to community contexts, reinforcing behavior change and outreach."},
+
+{ id:37, domain:'C', question:"A youth group is meant to serve both as a target and as an agent of change. Which combined objective exemplifies this dual role?",
+  choices:["A. Provide snacks only","B. Improve members' life skills (target) and mobilize them for community clean-up campaigns (agent)","C. Only entertain youth","D. Punish non-members"], answer:1,
+  rationale:"Combining personal development with community action demonstrates groups functioning as both target and agent of change."},
+
+{ id:38, domain:'C', question:"A facilitator asks how to ensure groups are non-discriminatory and gender-responsive. Which procedural step is essential?",
+  choices:["A. Use exclusionary language intentionally","B. Apply inclusive recruitment, gender-sensitive facilitation, and accessible meeting times/venues","C. Exclude women from leadership","D. Ignore accessibility needs"], answer:1,
+  rationale:"Inclusive recruitment and facilitation practices help ensure participation across gender and diversity lines."},
+
+{ id:39, domain:'C', question:"A social worker argues groupwork is cost-effective. Which qualifier is necessary to avoid overgeneralization?",
+  choices:["A. Groupwork is always cheaper and better","B. It can be cost-effective when designed and facilitated well, but complexity or poor implementation can reduce benefits","C. Cost is the only criterion","D. Never consider cost"], answer:1,
+  rationale:"Cost-effectiveness depends on design and implementation; poor quality can negate efficiency gains."},
+
+{ id:40, domain:'C', question:"You're planning a group for survivors of domestic violence. What guiding principle should be prioritized in design?",
+  choices:["A. Mandatory public disclosure of stories","B. Safety, confidentiality, survivor-centeredness and options for referrals","C. Focus on group image only","D. Ignore individual needs"], answer:1,
+  rationale:"Survivor-centered principles emphasizing safety and confidentiality are paramount in sensitive group contexts."},
+
+{ id:41, domain:'C', question:"A group aims to increase school attendance. Which group-level outcome would indicate success?",
+  choices:["A. Reduced group attendance only","B. Increased school enrollment/attendance rates among group members and improved parental support behaviors","C. More meetings but no behavior change","D. Only social media likes"], answer:1,
+  rationale:"Changes in attendance and supporting behaviors show groups’ practical impact on targeted outcomes."},
+
+{ id:42, domain:'C', question:"A facilitator must choose media for a session on financial literacy. Which media selection principle is best?",
+  choices:["A. Use technical jargon slides only","B. Match media to group’s literacy level, cultural context, and activity objectives (visual aids, role-plays)","C. Use only written tests","D. Use irrelevant videos"], answer:1,
+  rationale:"Appropriate media are accessible, culturally relevant, and support the session’s learning objectives."},
+
+{ id:43, domain:'C', question:"A program uses groups to reduce substance use. Which combined use (means/agent/target) is most effective?",
+  choices:["A. Provide only information leaflets","B. Offer CBT-based group sessions (means/target) and train peer leaders to sustain community prevention (agent)","C. Arrest participants for attendance","D. Social stigma campaigns only"], answer:1,
+  rationale:"Combining therapeutic groupwork with peer leadership creates short-term change and longer-term community prevention capacity."},
+
+{ id:44, domain:'C', question:"A facilitator is asked when to terminate a support group. Which termination criterion is appropriate?",
+  choices:["A. When facilitator is tired","B. When group goals are met, members have gained skills or linkages, and plans for continuing support exist","C. After a fixed number of arbitrary sessions only","D. When funding ends regardless of progress"], answer:1,
+  rationale:"Termination should be purposeful — based on goal attainment, member readiness, and sustainability plans."},
+
+{ id:45, domain:'C', question:"A designer needs to ensure sessions are culturally sensitive. Which content decision reflects cultural responsiveness?",
+  choices:["A. Ignore local practices","B. Incorporate language, metaphors (e.g., kapwa), and rituals meaningful to participants while ensuring inclusivity","C. Use Western idioms only","D. Ban cultural expression"], answer:1,
+  rationale:"Using culturally resonant language and rituals increases relevance and trust while maintaining inclusivity."},
+
+/* 46-60 D: Knowledge & philosophical foundations (15 items) */
+{ id:46, domain:'D', question:"A facilitator integrates systems/ecological theory into group assessment. Which assessment focus aligns with this theory?",
+  choices:["A. Only individual traits","B. Interactions between individual members, family, community institutions, and environmental factors","C. Ignore community resources","D. Focus on IQ only"], answer:1,
+  rationale:"Systems/ecological approaches examine multiple interacting levels shaping group members' lives and behaviors."},
+
+{ id:47, domain:'D', question:"A groupworker uses strengths perspective in a livelihood group. What facilitation technique embodies this perspective?",
+  choices:["A. Focus only on deficits","B. Elicit members' existing skills, successes, and resources and build upon them","C. Ignore members' prior experience","D. Dictate solutions without input"], answer:1,
+  rationale:"Strengths-based facilitation highlights assets and capacities as starting points for intervention and empowerment."},
+
+{ id:48, domain:'D', question:"A training emphasizes anti-oppressive practice in groups. Which facilitator behavior is consistent with this value?",
+  choices:["A. Reinforce existing hierarchies","B. Challenge oppressive dynamics, encourage marginalized voices, and share power in decision-making","C. Silence dissenting members","D. Center only expert perspectives"], answer:1,
+  rationale:"Anti-oppressive practice seeks to redistribute power and ensure marginalized members are heard and respected."},
+
+{ id:49, domain:'D', question:"A facilitator must apply psychodynamic ideas in a therapy group. Which plan incorporates psychodynamic principles?",
+  choices:["A. Focus only on logistics","B. Explore unconscious processes, transference, and group projections within a safe therapeutic frame","C. Ignore emotions","D. Use only standardized tests"], answer:1,
+  rationale:"Psychodynamic groupwork attends to relational patterns and unconscious dynamics that shape member interactions."},
+
+{ id:50, domain:'D', question:"A practicum student asks how learning theory informs group activities. Which activity reflects learning theory?",
+  choices:["A. Passive lecture only","B. Role-play with reinforcement and rehearsal to shape new behaviors","C. Random social events without objectives","D. Ignore feedback"], answer:1,
+  rationale:"Learning theory supports active skills rehearsal and reinforcement to change behaviors in group settings."},
+
+{ id:51, domain:'D', question:"A group uses a mutual aid framework. Which philosophical assumption underpins mutual aid?",
+  choices:["A. Individuals cannot help each other","B. People have capacities to support each other and mutual exchange fosters resilience","C. Only professionals should provide support","D. Charity creates dependency always"], answer:1,
+  rationale:"Mutual aid assumes reciprocal helping and community resources are central to social support and resilience."},
+
+{ id:52, domain:'D', question:"A facilitator needs to integrate Sikolohiyang Filipino. What practice exemplifies this indigenous perspective?",
+  choices:["A. Use only Western frameworks","B. Center kapwa, loob, and pakikisama in facilitation and conceptualize wellbeing relationally","C. Prioritize individual achievement only","D. Exclude cultural values"], answer:1,
+  rationale:"Sikolohiyang Filipino foregrounds relational and indigenous constructs like kapwa and loob in understanding behavior."},
+
+{ id:53, domain:'D', question:"Your groupwork approach emphasizes a rights-based lens. Which group objective aligns with this lens?",
+  choices:["A. Keep beneficiaries passive recipients","B. Empower members to claim entitlements and hold institutions accountable","C. Avoid civic engagement","D. Prioritize charity over justice"], answer:1,
+  rationale:"Rights-based groupwork equips members to assert rights and engage in accountability, not just receive services."},
+
+{ id:54, domain:'D', question:"A student asks which values are core to social groupwork. Which combination best reflects these values?",
+  choices:["A. Secrecy, exclusion, coercion","B. Respect for dignity, participation, non-discrimination, and empowerment","C. Profit, hierarchy, competition","D. Indifference"], answer:1,
+  rationale:"Ethical groupwork is grounded in dignity, inclusion, participation and empowerment for all members."},
+
+{ id:55, domain:'D', question:"A facilitator contemplates anti-oppressive facilitation but fears conflict. Which stance balances safety and challenging injustice?",
+  choices:["A. Avoid all uncomfortable topics","B. Create a safe space, set clear norms, and support critical dialogue with care","C. Use shame to change behavior","D. Enforce silence on sensitive issues"], answer:1,
+  rationale:"Creating safety while facilitating critical dialogue allows addressing power without retraumatizing members."},
+
+{ id:56, domain:'D', question:"A group session uses experiential learning. Which phase is essential per Kolb’s cycle for effective group learning?",
+  choices:["A. Only theory presentation","B. Concrete experience, reflective observation, abstract conceptualization, and active experimentation","C. Skip reflection","D. Immediate testing without practice"], answer:1,
+  rationale:"Experiential learning cycles require experience, reflection, conceptualization, and experimentation for integrated learning."},
+
+{ id:57, domain:'D', question:"A group facilitator wants to use field theory concepts. What assessment focus reflects field theory?",
+  choices:["A. Only individual preferences","B. Focus on the social field—forces, roles, boundaries and the group’s environment affecting behavior","C. Ignore context entirely","D. Emphasize genetics"], answer:1,
+  rationale:"Field theory examines situational forces and environmental factors that influence group behavior and member roles."},
+
+{ id:58, domain:'D', question:"A facilitator adopts strengths/empowerment and systems approaches together. Which plan integrates both effectively?",
+  choices:["A. Focus only on deficits in the system","B. Map systemic barriers, identify member strengths, and co-design interventions leveraging assets across systems","C. Only provide one-off handouts","D. Avoid systems thinking"], answer:1,
+  rationale:"Combining systems mapping and asset-based strategies yields interventions that address barriers while leveraging capacities."},
+
+{ id:59, domain:'D', question:"A group program emphasizes cultural humility. Which facilitator practice demonstrates humility?",
+  choices:["A. Assume mastery over local culture","B. Ask questions, listen, defer to local knowledge, and avoid presumptive expertise","C. Impose outsider models without consultation","D. Dismiss participant feedback"], answer:1,
+  rationale:"Cultural humility involves openness, curiosity, and valuing participants' cultural knowledge rather than imposing expert views."},
+
+{ id:60, domain:'D', question:"A training integrates social justice pedagogy into group facilitation. What is an expected group outcome?",
+  choices:["A. Reproduce existing inequities","B. Increased critical consciousness and collective action to address injustices","C. Focus only on individual therapy without broader awareness","D. Avoid discussing structural issues"], answer:1,
+  rationale:"Social justice-oriented groupwork fosters awareness and collective strategies to challenge systemic inequities."},
+
+/* 61-80 E: Phases of group development & helping process (20 items) */
+{ id:61, domain:'E', question:"A newly-formed barangay youth group struggles with unclear expectations. Which pre-group phase activity would most improve member selection and clarity?",
+  choices:["A. Start sessions immediately with no planning","B. Conduct community consultation, define objectives and selection criteria, and prepare a session plan","C. Randomly invite people from social media","D. Use only posters without screening"], answer:1,
+  rationale:"Pre-group planning clarifies purpose, membership criteria, and prepares facilitators and prospective members for the process."},
+
+{ id:62, domain:'E', question:"During the formation phase members are polite but guarded. Which facilitator task is most appropriate in this stage?",
+  choices:["A. Push for deep disclosure immediately","B. Build rapport, clarify norms, and facilitate icebreaking and trust-building activities","C. Ignore introductions","D. Impose strict punishments for silence"], answer:1,
+  rationale:"Early stages require rapport and norm-setting to create safety before deeper engagement."},
+
+{ id:63, domain:'E', question:"As storming begins, conflict emerges between two members. Which facilitator stance is recommended?",
+  choices:["A. Take sides immediately","B. Use constructive confrontation, mediate, and help the group translate conflict into productive problem-solving","C. Remove one member immediately","D. Avoid addressing conflict"], answer:1,
+  rationale:"Facilitators transform conflict into growth by mediating and guiding the group to resolve issues constructively."},
+
+{ id:64, domain:'E', question:"During norming, the group develops implicit rules. Why should the facilitator help make norms explicit?",
+  choices:["A. Implicit norms are always enough","B. Explicit norms increase clarity, accountability, and reduce misunderstandings","C. Explicit norms stifle creativity always","D. Norms are irrelevant"], answer:1,
+  rationale:"Making norms explicit promotes shared expectations and helps manage behavior and accountability."},
+
+{ id:65, domain:'E', question:"In the performing phase a group is highly productive. Which facilitator role is most appropriate now?",
+  choices:["A. Dominant director controlling tasks","B. Consultant or resource person who supports member leadership and complex problem-solving","C. Absent facilitator with no oversight","D. Constantly restructure the group"], answer:1,
+  rationale:"In performing, facilitation shifts to supporting member-led action and complex tasks, not micromanagement."},
+
+{ id:66, domain:'E', question:"At termination some members feel anxious about ending. What termination activity supports healthy closure?",
+  choices:["A. Abruptly stop meetings without discussion","B. Conduct reflective evaluation, celebrate achievements, and plan post-group supports or referrals","C. Force continued membership indefinitely","D. Ignore emotions"], answer:1,
+  rationale:"Planned termination helps process loss, consolidate gains, and ensure members have aftercare plans."},
+
+{ id:67, domain:'E', question:"During pre-group assessment you must create selection criteria. Which criterion balances group cohesion and diversity?",
+  choices:["A. Select identical members only","B. Match key shared needs while allowing some diversity to enrich perspectives and learning","C. Select random individuals with no screening","D. Exclude divergent views altogether"], answer:1,
+  rationale:"Balancing shared needs with diversity encourages identification while benefiting from multiple viewpoints."},
+
+{ id:68, domain:'E', question:"A facilitator must design individual-focused assessment tasks for a group of adolescents. Which component is essential in the individual assessment?",
+  choices:["A. Only group-level questions","B. Individual needs, strengths, safety concerns, and goals that feed into group planning","C. Only demographic data","D. Ignore household context"], answer:1,
+  rationale:"Individual assessment ensures tailored supports and alignment of group goals with personal needs."},
+
+{ id:69, domain:'E', question:"When formulating group goals and objectives, which statement is most appropriate?",
+  choices:["A. Vague goals to allow flexibility","B. Specific, measurable objectives co-developed with members that reflect both individual and group aims","C. Goals decided solely by funders","D. No goals necessary"], answer:1,
+  rationale:"Co-created SMART objectives align expectations and facilitate monitoring and member ownership."},
+
+{ id:70, domain:'E', question:"A group needs both individual- and group-focused assessment. Which reason justifies doing both?",
+  choices:["A. One assessment is enough","B. Individual assessment captures personal needs while group assessment captures collective dynamics and priorities","C. Only group-level data matters","D. Individual assessments are irrelevant"], answer:1,
+  rationale:"Combining assessments ensures interventions address personal and collective dimensions effectively."},
+
+{ id:71, domain:'E', question:"When writing a group session plan, which element must always be included?",
+  choices:["A. Random activities without purpose","B. Objectives, sequence of activities, materials, roles, and evaluation indicators","C. Only start time","D. Budget line only"], answer:1,
+  rationale:"A comprehensive session plan links objectives to activities and evaluation to ensure purposeful sessions."},
+
+{ id:72, domain:'E', question:"A group leader should adapt facilitation stance across phases. Which stance is typical in pre-group vs. performing phases respectively?",
+  choices:["A. Directive then directive","B. Directive/structuring in pre-group; facilitative/supportive in performing","C. Passive then passive","D. Unchanged always"], answer:1,
+  rationale:"Early stages require more structure; mature groups benefit from facilitative and supportive leadership."},
+
+{ id:73, domain:'E', question:"A program trainer asks how to evaluate progress during implementation. Which measure is most process-oriented?",
+  choices:["A. Only final outcomes months later","B. Session attendance, member engagement levels, and achievement of session-specific objectives","C. Only financial expenditure","D. Social media metrics only"], answer:1,
+  rationale:"Process metrics monitor engagement and functionality throughout implementation to guide adjustments."},
+
+{ id:74, domain:'E', question:"A facilitator must manage termination when a group dissolves due to funding. Which ethical practice is required?",
+  choices:["A. Abandon members abruptly","B. Provide notice, closure sessions, referrals, and documentation of achievements and follow-up plans","C. Stop without explanation","D. Publicize individual cases"], answer:1,
+  rationale:"Ethical termination includes notice, closure activities and connecting members to continuing supports."},
+
+{ id:75, domain:'E', question:"You are preparing for post-group evaluation. Which mixed-methods approach provides rich insights?",
+  choices:["A. Only count number of sessions held","B. Combine quantitative indicators (attendance, skill tests) with qualitative feedback and member narratives","C. Use only financial audits","D. Only management impressions"], answer:1,
+  rationale:"Mixed methods capture measurable change and subjective experiences that explain outcomes."},
+
+{ id:76, domain:'E', question:"During selection a candidate shows ambivalence about participation. Which ethical response should the facilitator take?",
+  choices:["A. Coerce participation","B. Explore ambivalence, respect autonomy, clarify expectations, and revisit consent","C. Force them into leadership","D. Exclude without discussion"], answer:1,
+  rationale:"Respect for autonomy requires addressing ambivalence through informed choice and clear expectations."},
+
+{ id:77, domain:'E', question:"In group-focused planning you must set both short-term and long-term goals. Why are short-term goals important?",
+  choices:["A. Short-term goals are irrelevant",
+  "B. They provide early successes, build momentum and sustain engagement toward longer-term aims",
+  "C. Short-term goals demotivate members",
+  "D. Only long-term goals matter"], answer:1,
+  rationale:"Short-term wins reinforce motivation and demonstrate progress, supporting sustained engagement."},
+
+{ id:78, domain:'E', question:"A facilitator needs to identify worker tasks in each phase of groupwork. Which task is specific to the termination phase?",
+  choices:["A. Recruit members only","B. Evaluate group outcomes, document learning, and facilitate closure","C. Conduct icebreakers only","D. Ignore documentation"], answer:1,
+  rationale:"Termination requires evaluation, documentation and closure work to consolidate learning and plan follow-up."},
+
+{ id:79, domain:'E', question:"During plan implementation a facilitator notices declining attendance. What is a suitable immediate check?",
+  choices:["A. Cancel the program","B. Ask members about barriers (schedules, content relevance), adjust logistics or content, and follow up with absent members","C. Increase session length arbitrarily","D. Enforce fines for absence"], answer:1,
+  rationale:"Identifying and addressing practical barriers often restores engagement; punitive measures are counterproductive."},
+
+{ id:80, domain:'E', question:"You must balance individual and group goals in assessment. Which planning approach best does this?",
+  choices:["A. Only focus on group goals",
+  "B. Co-construct individual action plans aligned with collective group objectives and review both in sessions","C. Privately set individual goals without group awareness",
+  "D. Ignore individual needs"], answer:1,
+  rationale:"Integrating individual action plans within group goals ensures individual growth contributes to collective aims."},
+
+/* 81-90 F: Intervention models & approaches (10 items) */
+{ id:81, domain:'F', question:"A barangay forms a remedial group for adolescents with aggressive behavior. Which model is most applicable?",
+  choices:["A. Social goals model","B. Remedial/psychotherapeutic model focusing on behavior change and skills training","C. Task-centered model only","D. Developmental model exclusively"], answer:1,
+  rationale:"Remedial models address individual dysfunction via therapeutic group processes and skill-building."},
+
+{ id:82, domain:'F', question:"A group uses cognitive-behavioral techniques. Which session activity exemplifies CBT in groups?",
+  choices:["A. Passive listening to speeches","B. Role-plays to rehearse alternative responses and cognitive restructuring exercises","C. Only philosophical debates","D. Ignore behavior change"], answer:1,
+  rationale:"CBT uses active skill practice like role-plays and cognitive restructuring to change thoughts and behaviors."},
+
+{ id:83, domain:'F', question:"A disaster-affected community needs quick psychosocial support. Which group approach is appropriate initially?",
+  choices:["A. Long-term psychodynamic therapy immediately","B. Crisis intervention and psychological first aid in brief structured group sessions","C. No psychosocial support required","D. Solely judicial proceedings"], answer:1,
+  rationale:"Crisis interventions provide immediate support and stabilization, appropriate in early disaster responses."},
+
+{ id:84, domain:'F', question:"A women's group wants empowerment rather than therapy. Which model should the facilitator use?",
+  choices:["A. Remedial therapy only","B. Developmental/gender-responsive empowerment model focusing on capacity-building and collective action","C. Strictly task-centered model","D. Ignore leadership development"], answer:1,
+  rationale:"Developmental empowerment models prioritize agency, skills and collective advocacy—suitable for women’s groups."},
+
+{ id:85, domain:'F', question:"A task-centered group addresses a community sanitation problem. What hallmark characterizes task-centered work?",
+  choices:["A. Vague objectives",
+  "B. Time-limited, problem-focused, with measurable tasks and client participation in planning",
+  "C. No client involvement",
+  "D. Focus only on therapy"], answer:1,
+  rationale:"Task-centered approaches are pragmatic, collaborative and oriented to concrete, time-bound outcomes."},
+
+{ id:86, domain:'F', question:"A facilitator wants to apply interactionist groupwork. Which technique aligns with this approach?",
+  choices:["A. One-way lectures only","B. Activities that build mutual aid, reciprocity and member interaction to solve problems","C. Isolate members from each other",
+  "D. Focus exclusively on external experts"], answer:1,
+  rationale:"Interactionist approaches center on relationship-building and mutual support as engines of change."},
+
+{ id:87, domain:'F', question:"In applying psychosocial group approaches, what is a key attention area for facilitators?",
+  choices:["A. Only program logistics",
+  "B. Emotional safety, trauma-informed practice, and appropriate referral pathways for individuals needing clinical care","C. Ignore trauma",
+  "D. Avoid referrals"], answer:1,
+  rationale:"Psychosocial interventions must ensure safety and link individuals to clinical services when necessary."},
+
+{ id:88, domain:'F', question:"A task-centered approach is chosen for quick problem resolution. Which process element is critical to its success?",
+  choices:["A. No plan",
+  "B. Contracting with clear tasks, timelines, and responsibilities shared between members and facilitator","C. Vague agreement",
+  "D. Only external monitoring"], answer:1,
+  rationale:"Clear contracts and shared responsibilities ensure focus and accountability in task-centered work."},
+
+{ id:89, domain:'F', question:"A facilitator integrates feminist/gender-sensitive facilitation. Which session rule is consistent with this approach?",
+  choices:["A. Silence women’s concerns to avoid conflict",
+  "B. Affirm diverse voices, address power imbalances, and ensure equitable participation in decision-making",
+  "C. Prioritize men’s perspectives always",
+  "D. Enforce stereotypical roles"], answer:1,
+  rationale:"Gender-sensitive facilitation centers marginalized voices and challenges power dynamics to promote equity."},
+
+{ id:90, domain:'F', question:"A health promotion group uses a task-centered model for vaccination drives. Which element is part of the intervention?",
+  choices:["A. Open-ended, unfocused activities",
+  "B. Clear tasks (schedule, outreach assignments), monitoring of targets, and quick feedback loops",
+  "C. Only mass announcements",
+  "D. Ignore turnout data"], answer:1,
+  rationale:"Task-centered models specify actions and monitoring mechanisms to achieve concrete public health objectives."},
+
+/* 91-100 G: Recordings, supervision & Field Instruction (10 items) */
+{ id:91, domain:'G', question:"A field instructor asks which group recording is best for supervision feedback. Which recording form is most useful?",
+  choices:["A. No records",
+  "B. Reflective process notes describing facilitator tasks, member interactions, key incidents and appraisal for supervision", "C. Only attendance registers","D. Gossip notes"], answer:1,
+  rationale:"Reflective process notes capture dynamics and facilitator interventions useful for supervisory reflection and skill development."},
+
+{ id:92, domain:'G', question:"A practicum student must prepare a session plan for assessment. Which documentation should be included in the group file?",
+  choices:["A. Only personal opinions",
+  "B. Group objectives, session plans, attendance, brief process notes, consent/agreements, and referral records", "C. Only photographs", "D. Only financial receipts"], answer:1,
+  rationale:"Comprehensive group records support continuity, accountability, and ethical practice in field instruction."},
+
+{ id:93, domain:'G', question:"A supervisor uses co-facilitation to support a novice. Which supervisory practice during co-facilitation is most helpful?",
+  choices:["A. Publicly criticize mistakes",
+  "B. Pre-brief expectations, observe, provide immediate private feedback and post-session reflective debrief", "C. Leave the novice alone", "D. Avoid feedback"], answer:1,
+  rationale:"Structured pre-briefing and private debriefing support learning while maintaining safety for the group process."},
+
+{ id:94, domain:'G', question:"A field instructor requires students to log groupwork competencies. Which competency entry demonstrates reflective practice?",
+  choices:["A. 'Did session 1' only",
+  "B. Description of techniques used, member responses, what worked/failed, and plan for change", "C. Copy of session slides only", "D. No documentation"], answer:1,
+  rationale:"Reflective entries that analyze practice and plan improvements show professional growth and supervision value."},
+
+{ id:95, domain:'G', question:"A practitioner wants to protect confidentiality in group records. Which practice is essential?",
+  choices:["A. Share identifiable records openly",
+  "B. Use anonymized notes, secure storage and limit access to authorized personnel", "C. Post records on social media", "D. Keep records in public spaces"], answer:1,
+  rationale:"Anonymization and secure access protect clients’ confidentiality and meet ethical standards."},
+
+{ id:96, domain:'G', question:"During field instruction pre-group formation the student needs to recruit members. Which recruitment practice is ethical and effective?",
+  choices:["A. Coerce participants through incentives alone",
+  "B. Use clear information about purpose, voluntary nature, selection criteria and obtain informed consent", "C. Hide group aims", "D. Recruit only through coercion"], answer:1,
+  rationale:"Ethical recruitment involves transparency, voluntary participation, and informed consent to protect autonomy."},
+
+{ id:97, domain:'G', question:"A student is assigned to evaluate group outcomes. Which simple M&E tool is practical for field instruction?",
+  choices:["A. Long academic surveys only",
+  "B. Pre-post short outcome measures, session checklists and member feedback forms", "C. No measurement", "D. Only anecdotal notes"], answer:1,
+  rationale:"Concise pre-post measures and session checklists provide manageable data for evaluating change in field settings."},
+
+{ id:98, domain:'G', question:"A practicum supervisor notes ethical dilemmas in group confidentiality. Which supervisory guide helps manage dilemmas?",
+  choices:["A. Ignore dilemmas",
+  "B. Refer to code of ethics, discuss cases in supervision with de-identified details, and plan protective steps", "C. Publicly disclose cases", "D. Proceed without reflection"], answer:1,
+  rationale:"Using ethical codes and supervisory debriefs protects clients while guiding appropriate interventions."},
+
+{ id:99, domain:'G', question:"A field instructor asks students to design evaluation questions for a group-based livelihood program. Which evaluation question is relevant and measurable?",
+  choices:["A. Do participants feel good? (vague)",
+  "B. What proportion of participants increase monthly income by at least 20% within 6 months of completing the group program?", "C. Is the group pretty?", "D. How many snacks served?" ], answer:1,
+  rationale:"A measurable indicator with timeframe (20% income increase in 6 months) is concrete and useful for program evaluation."},
+
+{ id:100, domain:'G', question:"A group facilitator must prepare for supervision. Which one-page summary best facilitates supervisory feedback?",
+  choices:["A. A long novel",
+  "B. Brief session objectives, key member dynamics, interventions used, dilemmas encountered, and reflective questions for supervisor", "C. Only attendance data", "D. No summary"], answer:1,
+  rationale:"A concise, structured summary highlights learning points and enables focused supervisory guidance."}
+];
+
+/* Domain labels for UI */
+const DOMAIN_LABELS = {
+  'A':'Historical development & trends',
+  'B':'Group classifications & types',
+  'C':'Definition, purposes & uses',
+  'D':'Foundations & theories',
+  'E':'Phases of development & helping process',
+  'F':'Intervention models & approaches',
+  'G':'Recordings, supervision & field instruction'
+};
+
+/* App logic (same behavior as other quizzes) */
+let pool = [];
+let currentSet = [];
+let userAnswers = {};
+let currentIndex = 0;
+let totalToTake = 100;
+let timerMode = 'elapsed';
+let timerInterval = null;
+let startTime = null;
+let paused = false;
+let elapsedSeconds = 0;
+let countdownSeconds = 0;
+
+/* DOM refs */
+const startBtn = document.getElementById('startBtn');
+const numItemsEl = document.getElementById('numItems');
+const domainFilterEl = document.getElementById('domainFilter');
+const timerModeEl = document.getElementById('timerMode');
+const countdownInput = document.getElementById('countdownInput');
+const countdownMins = document.getElementById('countdownMins');
+
+const quizCard = document.getElementById('quizCard');
+const qText = document.getElementById('qText');
+const choicesEl = document.getElementById('choices');
+const qDomainText = document.getElementById('qDomainText');
+const domainBadge = document.getElementById('domainBadge');
+
+const currentIndexEl = document.getElementById('currentIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const answeredCountEl = document.getElementById('answeredCount');
+const remainingCountEl = document.getElementById('remainingCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const pauseBtn = document.getElementById('pauseBtn');
+const quitBtn = document.getElementById('quitBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+const resultCard = document.getElementById('resultCard');
+const overallScoreEl = document.getElementById('overallScore');
+const overallTotalEl = document.getElementById('overallTotal');
+const timeSpentEl = document.getElementById('timeSpent');
+const domainBreakdownEl = document.getElementById('domainBreakdown');
+const reviewListEl = document.getElementById('reviewList');
+const summaryGridEl = document.getElementById('summaryGrid');
+const restartBtn = document.getElementById('restartBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+/* Utilities */
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+  return array;
+}
+function formatTime(s){
+  const h = Math.floor(s/3600); s%=3600;
+  const m = Math.floor(s/60); const sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+/* Load pool based on domain */
+function loadPool(){
+  const domain = domainFilterEl.value;
+  pool = (domain === 'ALL') ? [...QUESTIONS] : QUESTIONS.filter(q=>q.domain===domain);
+}
+
+/* Start quiz */
+startBtn.addEventListener('click', ()=>{
+  loadPool();
+  const selected = numItemsEl.value;
+  if(selected === 'All') totalToTake = pool.length;
+  else totalToTake = parseInt(selected,10);
+  if(totalToTake > pool.length){
+    alert(`Only ${pool.length} questions available for selected domain. Using ${pool.length} instead.`);
+    totalToTake = pool.length;
+  }
+  timerMode = timerModeEl.value;
+  if(timerMode === 'countdown'){
+    countdownSeconds = Math.max(60, parseInt(countdownMins.value,10) * 60);
+  }
+  initQuiz();
+});
+
+/* Timer UI toggle */
+timerModeEl.addEventListener('change', ()=>{
+  if(timerModeEl.value === 'countdown') countdownInput.style.display = 'inline-block';
+  else countdownInput.style.display = 'none';
+});
+
+/* Initialize quiz set and timer */
+function initQuiz(){
+  userAnswers = {};
+  currentIndex = 0;
+  elapsedSeconds = 0;
+  paused = false;
+  startTime = Date.now();
+  currentSet = shuffle(pool.slice()).slice(0,totalToTake);
+  currentSet = currentSet.map(q=>{
+    const choices = q.choices.map((c,i)=>({c,i}));
+    shuffle(choices);
+    const newIndex = choices.findIndex(x=>x.i===q.answer);
+    return {...q, _shuffledChoices: choices.map(x=>x.c), _shuffledAnswerIndex: newIndex};
+  });
+  document.getElementById('totalIndex').textContent = currentSet.length;
+  domainBadge.textContent = (domainFilterEl.value==='ALL') ? 'ALL DOMAINS' : DOMAIN_LABELS[domainFilterEl.value];
+  document.getElementById('setupCard').classList?.add('hide');
+  quizCard.classList.remove('hide');
+  resultCard.classList.add('hide');
+  showQuestion(0);
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerMode === 'elapsed'){
+    timerDisplay.textContent = formatTime(0);
+    timerInterval = setInterval(()=>{ if(!paused){ elapsedSeconds++; timerDisplay.textContent = formatTime(elapsedSeconds); } },1000);
+  } else if(timerMode === 'countdown'){
+    timerDisplay.textContent = formatTime(countdownSeconds);
+    timerInterval = setInterval(()=>{
+      if(!paused){
+        if(countdownSeconds<=0){ submitQuiz(); clearInterval(timerInterval); }
+        else{ countdownSeconds--; timerDisplay.textContent = formatTime(countdownSeconds); elapsedSeconds++; }
+      }
+    },1000);
+  } else {
+    timerDisplay.textContent = 'No timer';
+  }
+}
+
+/* Show question */
+function showQuestion(idx){
+  if(idx<0) idx=0; if(idx>=currentSet.length) idx=currentSet.length-1;
+  currentIndex = idx;
+  const q = currentSet[idx];
+  currentIndexEl.textContent = idx+1;
+  qText.textContent = q.question;
+  qDomainText.textContent = DOMAIN_LABELS[q.domain];
+  choicesEl.innerHTML = '';
+  q._shuffledChoices.forEach((text,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="label">${'ABCD'[i]}</div><div style="flex:1">${text}</div>`;
+    if(userAnswers[q.id] && userAnswers[q.id].choice===i){
+      btn.style.borderColor = '#c7f0d7'; btn.style.background = '#f0fff4';
+    }
+    btn.addEventListener('click', ()=> handleAnswer(q, i));
+    choicesEl.appendChild(btn);
+  });
+  const answered = Object.keys(userAnswers).length;
+  answeredCountEl.textContent = answered;
+  remainingCountEl.textContent = (currentSet.length - answered);
+  prevBtn.disabled = (idx===0);
+  nextBtn.disabled = (idx===currentSet.length-1);
+}
+
+/* Handle answer */
+function handleAnswer(q, choiceIndex){
+  const t = Math.floor((Date.now()-startTime)/1000);
+  userAnswers[q.id] = {choice: choiceIndex, answeredAt: t};
+  saveAndAdvance();
+}
+
+/* Save & auto-advance */
+function saveAndAdvance(){
+  showQuestion(currentIndex);
+  if(currentIndex < currentSet.length-1){
+    currentIndex++;
+    showQuestion(currentIndex);
+  } else {
+    if(Object.keys(userAnswers).length === currentSet.length){
+      submitQuiz();
+    } else {
+      for(let i=0;i<currentSet.length;i++){
+        if(!userAnswers[currentSet[i].id]){ showQuestion(i); return; }
+      }
+      submitQuiz();
+    }
+  }
+}
+
+/* Prev/Next buttons */
+prevBtn.addEventListener('click', ()=>{ if(currentIndex>0) showQuestion(currentIndex-1); });
+nextBtn.addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1) showQuestion(currentIndex+1); });
+
+/* Pause/quit */
+pauseBtn.addEventListener('click', ()=>{ paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; });
+quitBtn.addEventListener('click', ()=>{ if(confirm('Quit the quiz? Your answers will be submitted.')) submitQuiz(); });
+
+/* Submit & compute results */
+function submitQuiz(){
+  if(timerInterval) clearInterval(timerInterval);
+  const results = currentSet.map(q=>{
+    const user = userAnswers[q.id];
+    const selectedIndex = user ? user.choice : null;
+    const correctIndex = q._shuffledAnswerIndex;
+    const correct = (selectedIndex === correctIndex);
+    return { id:q.id, text:q.question, domain:q.domain, choices:q._shuffledChoices, selectedIndex, correctIndex, correct, rationale:q.rationale };
+  });
+  const total = results.length;
+  const correctCount = results.filter(r=>r.correct).length;
+  displayResults(results, correctCount, total);
+}
+
+/* Display results */
+function displayResults(results, correctCount, total){
+  quizCard.classList.add('hide');
+  resultCard.classList.remove('hide');
+  overallScoreEl.textContent = correctCount;
+  overallTotalEl.textContent = total;
+  timeSpentEl.textContent = formatTime(elapsedSeconds);
+  const domains = {};
+  results.forEach(r=>{
+    if(!domains[r.domain]) domains[r.domain] = {total:0,correct:0};
+    domains[r.domain].total++; if(r.correct) domains[r.domain].correct++;
+  });
+  domainBreakdownEl.innerHTML = '';
+  for(const d of Object.keys(DOMAIN_LABELS)){
+    if(domains[d]){
+      const t = domains[d].total, c = domains[d].correct;
+      const el = document.createElement('div'); el.className='tile';
+      el.innerHTML = `<strong>${DOMAIN_LABELS[d]}</strong><div class="small">Score: ${c}/${t} (${Math.round(c/t*100)}%)</div>`;
+      domainBreakdownEl.appendChild(el);
+    }
+  }
+  summaryGridEl.innerHTML = '';
+  const overallTile = document.createElement('div'); overallTile.className='tile';
+  overallTile.innerHTML = `<strong>Overall</strong><div class="small">${correctCount}/${total} (${Math.round(correctCount/total*100)}%)</div>`;
+  summaryGridEl.appendChild(overallTile);
+  reviewListEl.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const wrapper = document.createElement('div'); wrapper.style.padding='10px'; wrapper.style.borderBottom='1px solid #f1f5f9';
+    const qnum = idx+1;
+    const userLabel = r.selectedIndex==null ? '<em>Unanswered</em>' : 'Your answer: <strong>' + 'ABCD'[r.selectedIndex] + '</strong>';
+    const correctLabel = 'Correct: <strong class="'+(r.correct?'correct':'incorrect')+'">' + 'ABCD'[r.correctIndex] + '</strong>';
+    wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="domain-badge">${DOMAIN_LABELS[r.domain]}</span> Q${qnum}: ${r.text}</div><div style="font-size:13px">${userLabel} · ${correctLabel}</div></div>
+      <div style="margin-top:8px">Choices:</div>
+      <div style="margin-top:6px">${r.choices.map((c,i)=>'<div style="font-size:13px"><strong>'+ 'ABCD'[i] +'.</strong> '+ c + (i===r.correctIndex ? ' <span class="correct">✔</span>' : '') + '</div>').join('')}</div>
+      <div class="rationale"><em>Rationale:</em> ${r.rationale}</div>`;
+    reviewListEl.appendChild(wrapper);
+  });
+}
+
+/* Restart & download */
+restartBtn.addEventListener('click', ()=>{ document.getElementById('setupCard').classList.remove('hide'); resultCard.classList.add('hide'); window.scrollTo(0,0); });
+downloadBtn.addEventListener('click', ()=>{
+  const data = { timestamp: new Date().toISOString(), domain: domainFilterEl.value, totalAsked: currentSet.length, answers: userAnswers };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='groupwork_quiz_results.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* default */
+(function(){ domainFilterEl.value='ALL'; numItemsEl.value='100'; timerModeEl.value='elapsed'; })();
+</script>
+</body>
+</html>

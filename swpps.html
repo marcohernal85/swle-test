@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SWPPS — Philippine SWLE Practice Quiz (100 situational items)</title>
+<style>
+  :root{
+    --bg:#f7fafc; --card:#ffffff; --accent:#0b63d6; --muted:#6b7280; --good:#0f9d58; --bad:#d93025;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111;}
+  header{background:linear-gradient(90deg,#093c9f22,transparent);padding:14px 16px;border-bottom:1px solid #e6eef8;}
+  .wrap{max-width:980px;margin:18px auto;padding:12px;}
+  .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:18px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,input[type="number"]{padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+  button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 18px rgba(11,99,214,0.06)}
+  .meta{font-size:13px;color:var(--muted)}
+  .question-area{display:flex;gap:12px;flex-direction:column}
+  .qtext{font-weight:600;padding:8px 0;font-size:16px}
+  .choices{display:grid;gap:10px}
+  .choice{padding:12px;border-radius:10px;border:1px solid #e6eef8;background:#fbfdff;cursor:pointer;display:flex;gap:10px;align-items:center}
+  .choice:hover{background:#f0f8ff}
+  .choice .label{font-weight:700;width:22px;height:22px;border-radius:6px;background:#eef6ff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+  .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stats{font-size:13px;color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .hide{display:none}
+  .results{margin-top:16px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:13px}
+  .correct{color:var(--good);font-weight:700}
+  .incorrect{color:var(--bad);font-weight:700}
+  .domain-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+  .timer{font-weight:700}
+  @media (max-width:640px){
+    .top{flex-direction:column;align-items:flex-start}
+    .controls{width:100%}
+    .footer{flex-direction:column;align-items:flex-start}
+  }
+  .question-count{background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e6eef8}
+  .review-list{max-height:420px;overflow:auto}
+  .rationale{font-size:13px;color:var(--muted);margin-top:6px}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+  .tile{padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eef2f7}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1>SWPPS — SWLE Practice (PQF 6) — Situational Philippine Items (100)</h1>
+      <div class="meta">Interactive quiz — situational, professional-level — mobile-friendly</div>
+    </div>
+    <div class="controls">
+      <label class="small">Items:
+        <select id="numItems"><option>20</option><option>50</option><option selected>100</option><option>200</option><option>All</option></select>
+      </label>
+      <label class="small">Domain:
+        <select id="domainFilter">
+          <option value="ALL">ALL DOMAINS</option>
+          <option value="A">Social Work Statistics</option>
+          <option value="B">Social Work Research I</option>
+          <option value="C">Social Work Research II</option>
+          <option value="D">Social Welfare Policies, Programs & Services</option>
+          <option value="F">Social Welfare Agency Administration</option>
+          <option value="G">SW Project/Program Devt & Management</option>
+        </select>
+      </label>
+      <label class="small">Timer mode:
+        <select id="timerMode"><option value="none">None (no limit)</option><option value="elapsed" selected>Elapsed</option><option value="countdown">Countdown</option></select>
+      </label>
+      <label class="small" id="countdownInput" style="display:none">Duration (mins):
+        <input type="number" id="countdownMins" min="1" value="120" style="width:88px">
+      </label>
+      <button id="startBtn">Start Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupCard" class="card">
+    <div class="meta">Before you start: choose number of items and domain filter. Questions are situational and set in the Philippine policy/program context.</div>
+    <div style="margin-top:8px;color:var(--muted);font-size:13px">
+      Tip: Use <strong>Domain</strong> to practice targeted areas. Choose <strong>All</strong> or specific domain. The system randomizes questions and choices each attempt.
+    </div>
+  </div>
+
+  <div id="quizCard" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <span id="domainBadge" class="domain-badge">ALL DOMAINS</span>
+        <span class="question-count">Q <span id="currentIndex">1</span> / <span id="totalIndex">100</span></span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="timer">Time: <span id="timerDisplay">00:00:00</span></div>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="quitBtn" class="secondary">Quit</button>
+      </div>
+    </div>
+
+    <div class="question-area" style="margin-top:12px">
+      <div id="qDomain" class="meta small">Domain: <strong id="qDomainText"></strong></div>
+      <div id="qText" class="qtext">Question text</div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="footer">
+      <div class="stats">Answered: <span id="answeredCount">0</span> | Remaining: <span id="remainingCount">0</span></div>
+      <div>
+        <button id="prevBtn" class="secondary">Prev</button>
+        <button id="nextBtn" class="secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h3>Results</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div style="margin-top:8px;font-size:14px">
+      <strong>Overall Score:</strong> <span id="overallScore"></span> / <span id="overallTotal"></span>
+      &nbsp; • &nbsp; <strong>Time Spent:</strong> <span id="timeSpent"></span>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Per-domain breakdown</h4>
+      <div id="domainBreakdown"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Review — All Questions</h4>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="restartBtn">Restart & Shuffle</button>
+      <button id="downloadBtn" class="secondary">Download Results (JSON)</button>
+    </div>
+  </div>
+
+  <div id="notes" class="card" style="margin-top:12px">
+    <strong>Notes</strong>
+    <ul>
+      <li class="small">Click an answer choice to record and auto-advance to the next question.</li>
+      <li class="small">You can pause/resume the timer. If countdown mode is used, quiz auto-submits when time is up.</li>
+      <li class="small">All functionality is client-side; no data leaves your device unless you download results.</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+/* -------------------------
+  SWPPS Question Bank (100 items)
+  Domains mapping:
+   A - Social Work Statistics (10 items)
+   B - Social Work Research I (10 items)
+   C - Social Work Research II (10 items)
+   D - Social Welfare Policies, Programs & Services (30 items)
+   F - Social Welfare Agency Administration (20 items)
+   G - Social Welfare Project/Program Devt & Management (20 items)
+  ------------------------- */
+
+const QUESTIONS = [
+/* A - Social Work Statistics (1-10) */
+{ id: 1, domain:'A', question:"As a program evaluator in a municipality, you find the mean monthly income of beneficiaries is ₱6,500 but the median is ₱3,000. What does this suggest and which measure should guide targeting?", choices:[
+  "A. Mean and median equal — use mean for targeting",
+  "B. The mean is inflated by high incomes; median better reflects typical beneficiary income",
+  "C. Median is skewed by outliers; use mode instead",
+  "D. Data are unreliable — discard both"], answer:1,
+  rationale:"A large gap (mean > median) suggests positive skew from high outliers; the median better represents the typical household for targeting."},
+
+{ id: 2, domain:'A', question:"During a needs assessment you use a stratified sampling design across barangays to ensure representation. What is a key advantage of stratified sampling here?", choices:[
+  "A. It is always cheaper than simple random sampling",
+  "B. It ensures representation proportional to key subgroups (e.g., barangays) and reduces sampling error",
+  "C. It removes the need for sample size calculation",
+  "D. It eliminates non-response bias entirely"], answer:1,
+  rationale:"Stratified sampling improves representation of important subgroups and can reduce variance if strata are homogeneous."},
+
+{ id: 3, domain:'A', question:"You computed a household poverty indicator with a standard deviation of 0.8. What does standard deviation tell you in program monitoring?", choices:[
+  "A. The average poverty rate",
+  "B. How dispersed households’ scores are around the mean; informs variability and targeting precision",
+  "C. The causal effect of the program",
+  "D. It is not useful in monitoring"], answer:1,
+  rationale:"Standard deviation measures dispersion, which helps understand variability across households and reliability of averages."},
+
+{ id: 4, domain:'A', question:"A survey shows a correlation coefficient of -0.65 between years of schooling and probability of chronic malnutrition in a dataset. Which is the appropriate interpretation?", choices:[
+  "A. More schooling is associated with higher malnutrition",
+  "B. Greater education is associated with lower probability of malnutrition, though correlation is not causation",
+  "C. There is no relationship",
+  "D. Education directly causes improved nutrition always"], answer:1,
+  rationale:"A negative correlation indicates an inverse association; however, statistical correlation does not prove causation without further analysis."},
+
+{ id: 5, domain:'A', question:"You plan to compare average test scores among three provinces. Which statistical test is appropriate for comparing means across more than two groups?", choices:[
+  "A. Chi-square test",
+  "B. ANOVA (analysis of variance)",
+  "C. Pearson correlation",
+  "D. t-test between two groups"], answer:1,
+  rationale:"ANOVA is designed to test whether there are statistically significant differences among means of three or more groups."},
+
+{ id: 6, domain:'A', question:"In a monitoring report you transform household income into log-scale before regression. Why is log-transformation commonly used?", choices:[
+  "A. To make variables binary",
+  "B. To reduce skewness, stabilize variance, and interpret coefficients multiplicatively",
+  "C. To remove missing data",
+  "D. To guarantee significance"], answer:1,
+  rationale:"Log transformation reduces right skew and heteroscedasticity and helps interpret effects as percent changes."},
+
+{ id: 7, domain:'A', question:"A dataset has 12% missing values on a key outcome. Which handling approach balances bias and practical constraints in a program evaluation?", choices:[
+  "A. Listwise deletion always",
+  "B. Use multiple imputation or check missingness patterns before deciding",
+  "C. Replace missing with zeros",
+  "D. Ignore the variable"], answer:1,
+  rationale:"Multiple imputation or analysis of missing data mechanisms helps mitigate bias rather than using naive deletion or substitution."},
+
+{ id: 8, domain:'A', question:"You need to present program results to a municipal council with limited statistical background. Which presentation method is best?", choices:[
+  "A. Present raw regression tables only",
+  "B. Use clear graphs (bar/line), simple indicators, and plain language explanations of meaning and implications",
+  "C. Use only p-values",
+  "D. Provide only technical appendices"], answer:1,
+  rationale:"Visuals and plain-language summaries make statistics accessible to non-technical stakeholders and aid decision-making."},
+
+{ id: 9, domain:'A', question:"Your team calculates an index combining access to water, sanitation, and shelter. What should you examine to ensure the index is valid?", choices:[
+  "A. Internal consistency, weighting rationale, and sensitivity to alternative weights",
+  "B. Only the average value",
+  "C. Whether it looks visually appealing",
+  "D. If it matches a single household story"], answer:0,
+  rationale:"Validity of composite indices requires testing internal consistency and sensitivity to how components are weighted."},
+
+{ id: 10, domain:'A', question:"A field officer proposes using quota sampling for quick baseline data. What is a key limitation of quota sampling you should consider?", choices:[
+  "A. It is always unbiased",
+  "B. It can introduce selection bias because sampling within quotas is not random",
+  "C. It guarantees representativeness",
+  "D. It eliminates need for training enumerators"], answer:1,
+  rationale:"Quota sampling may be convenient but can introduce bias since selection within quotas often depends on convenience rather than random selection."},
+
+/* B - Social Work Research I (11-20) */
+{ id: 11, domain:'B', question:"As a social work researcher you must draft a study to evaluate a barangay feeding program’s effectiveness. What is the most important first step in the research process?", choices:[
+  "A. Write the conclusion",
+  "B. Define a clear research question and objectives linked to measurable outcomes",
+  "C. Collect random data immediately",
+  "D. Publish the methodology before fieldwork"], answer:1,
+  rationale:"A clear research question and measurable objectives guide design, methods, and analysis—critical first steps."},
+
+{ id: 12, domain:'B', question:"Your proposal distinguishes qualitative from quantitative designs. Which research question suits qualitative methods?", choices:[
+  "A. What is the prevalence of malnutrition?",
+  "B. How do mothers describe their experience of conditional cash transfer participation?",
+  "C. How many households received aid?",
+  "D. What is the average income?"], answer:1,
+  rationale:"Qualitative methods are best for understanding experiences, meanings, and processes rather than prevalence or averages."},
+
+{ id: 13, domain:'B', question:"For your ethics review you plan to interview survivors of domestic violence. Which ethical practice is essential before data collection?", choices:[
+  "A. Skip consent to save time",
+  "B. Secure informed consent, ensure confidentiality, and assess safety and referral pathways for participants",
+  "C. Publish their names",
+  "D. Interview in public settings without privacy"], answer:1,
+  rationale:"Research with vulnerable populations requires informed consent, confidentiality safeguards, and safety/referral planning."},
+
+{ id: 14, domain:'B', question:"A mixed-methods study uses a sequential explanatory design. What does this mean?", choices:[
+  "A. Qualitative data are collected first then quantitative",
+  "B. Quantitative data are collected first and then qualitative data explain or expand on findings",
+  "C. Both methods are never combined",
+  "D. Results are not integrated"], answer:1,
+  rationale:"In sequential explanatory designs, quantitative results are followed by qualitative inquiry to interpret or explain quantitative findings."},
+
+{ id: 15, domain:'B', question:"You propose a quasi-experimental evaluation of a literacy program without randomization. Which design strengthens causal inference here?", choices:[
+  "A. Cross-sectional only",
+  "B. Use a matched comparison group and pre-post measures if randomization isn't feasible",
+  "C. Only qualitative interviews",
+  "D. Post-test only"], answer:1,
+  rationale:"Matched comparison groups and pre-post measures help approximate counterfactuals when RCTs are not possible."},
+
+{ id: 16, domain:'B', question:"In literature review you find contradictory findings. How should you present this in your proposal?", choices:[
+  "A. Ignore contradictions",
+  "B. Synthesize differing findings, note methodological differences, and identify gaps your study will address",
+  "C. Pick the most favorable study only",
+  "D. Claim there is no evidence"], answer:1,
+  rationale:"A good review synthesizes conflicting evidence, explains variations, and situates the new study to fill gaps."},
+
+{ id: 17, domain:'B', question:"Your study uses purposive sampling to select experienced barangay health workers for key informant interviews. What justification should you include?", choices:[
+  "A. No justification needed",
+  "B. Purposive sampling is appropriate for targeting knowledgeable informants to obtain in-depth insights",
+  "C. To claim representativeness of all workers",
+  "D. To save money exclusively"], answer:1,
+  rationale:"Purposive sampling is defensible when seeking specific expertise or perspectives rather than statistical representativeness."},
+
+{ id: 18, domain:'B', question:"You must write research ethics protocols for community-based participatory research (CBPR). What principle is central to CBPR ethics?", choices:[
+  "A. Researcher control over all stages",
+  "B. Shared decision-making and community ownership over research process and outputs",
+  "C. Avoid community involvement",
+  "D. Publish without community notice"], answer:1,
+  rationale:"CBPR emphasizes co-ownership, shared decision-making, and benefit to participating communities."},
+
+{ id: 19, domain:'B', question:"A funding agency asks for indicators that are SMART for a child protection study. Which indicator is SMART?", choices:[
+  "A. Improve child well-being",
+  "B. Percentage of children with up-to-date immunization in target barangays (measured quarterly)",
+  "C. More services provided",
+  "D. Happiness index"], answer:1,
+  rationale:"SMART indicators are Specific, Measurable, Achievable, Relevant, and Time-bound—e.g., percent immunized quarterly fits that standard."},
+
+{ id: 20, domain:'B', question:"Your research team plans dissemination. Which strategy best ensures research uptake by LGUs?", choices:[
+  "A. Send technical report only",
+  "B. Co-develop policy briefs, present findings in LGU forums, and provide actionable recommendations tied to local budgets",
+  "C. Post on social media only",
+  "D. Keep findings internal"], answer:1,
+  rationale:"Policy briefs, local presentations, and practical recommendations increase relevance and uptake by decision-makers."},
+
+/* C - Social Work Research II (21-30) */
+{ id: 21, domain:'C', question:"You design a household questionnaire. Which practice improves reliability across enumerators?", choices:[
+  "A. Leave questions ambiguous",
+  "B. Use standardized question wording, conduct enumerator training, and pilot the instrument",
+  "C. Allow each enumerator to reword questions",
+  "D. Skip field testing"], answer:1,
+  rationale:"Standardization, training, and piloting reduce interviewer variance and improve instrument reliability."},
+
+{ id: 22, domain:'C', question:"For categorical data association you plan to use the Chi-Square test. What assumption should you check first?", choices:[
+  "A. Data are continuous and normally distributed",
+  "B. Expected cell counts are adequate (usually >=5) or use exact tests for small counts",
+  "C. No need for assumptions",
+  "D. Observations are dependent"], answer:1,
+  rationale:"Chi-square requires adequate expected counts per cell; small samples might require Fisher's exact test."},
+
+{ id: 23, domain:'C', question:"Your instrument includes a Likert-scale satisfaction question. Which analysis is most appropriate for summarizing central tendency for ordinal responses?", choices:[
+  "A. Use raw means without caution",
+  "B. Use median and mode as robust central tendency measures for ordinal data; consider non-parametric tests for comparisons",
+  "C. Use linear regression always",
+  "D. Convert to binary without reason"], answer:1,
+  rationale:"Ordinal data are best summarized with medians/modes and analyzed with non-parametric tests unless justified otherwise."},
+
+{ id: 24, domain:'C', question:"You are preparing a presentation of sample size justification. Which elements are essential to include?", choices:[
+  "A. No justification needed",
+  "B. Expected effect size, power (e.g., 80%), significance level (e.g., 5%), and attrition allowance",
+  "C. Only desired sample size",
+  "D. Budget only"], answer:1,
+  rationale:"Sample size calculations require effect size, desired power, alpha level, and expected attrition to be defensible."},
+
+{ id: 25, domain:'C', question:"Your research uses participant observation in a rural barangay. Which field note practice enhances validity?", choices:[
+  "A. Recording only impressions without details",
+  "B. Use descriptive and reflective notes, record time/context, and triangulate with other data sources",
+  "C. Rely solely on memory",
+  "D. Avoid note-taking to be discreet"], answer:1,
+  rationale:"Detailed descriptive and reflective notes and triangulation enhance credibility and allow thick description."},
+
+{ id: 26, domain:'C', question:"For dissemination you prepare an executive summary. Which element increases usefulness for managers?", choices:[
+  "A. Long methodological appendix only",
+  "B. Clear findings, concise recommendations, cost/resource implications, and next steps",
+  "C. Technical jargon without recommendations",
+  "D. Omit limitations"], answer:1,
+  rationale:"Managers need concise findings, actionable recommendations, and resource implications to inform decisions."},
+
+{ id: 27, domain:'C', question:"Your team uses SPSS for analysis but wants reproducibility. What approach should you adopt?", choices:[
+  "A. Manual calculations only",
+  "B. Scripted analysis (syntax) with commented steps and versioned datasets for reproducibility",
+  "C. Rely on point-and-click only",
+  "D. Do not document steps"], answer:1,
+  rationale:"Saving and commenting analysis scripts ensures reproducibility and transparency in quantitative analysis."},
+
+{ id: 28, domain:'C', question:"You validate a new survey module and compute Cronbach’s alpha of 0.52 for a 6-item scale. What does this suggest and what can you do?", choices:[
+  "A. Alpha >0.9 required always",
+  "B. Alpha is low; review items for coherence, consider removing poorly correlated items or redesigning the scale",
+  "C. Accept and proceed without change",
+  "D. Increase sample size only"], answer:1,
+  rationale:"Low alpha indicates low internal consistency; reviewing items and scale structure helps improve reliability."},
+
+{ id: 29, domain:'C', question:"Your research uses thematic analysis for interviews. Which step is NOT part of thematic analysis?", choices:[
+  "A. Familiarization with data",
+  "B. Coding and identifying themes",
+  "C. Deriving themes without reviewing codes",
+  "D. Reviewing and defining themes"], answer:2,
+  rationale:"Thematic analysis involves coding then deriving and reviewing themes; skipping codes undermines rigor."},
+
+{ id: 30, domain:'C', question:"You aim to present mixed-methods findings coherently. Which strategy best integrates results?", choices:[
+  "A. Present quantitative and qualitative results separately with no linkage",
+  "B. Use joint displays and triangulate findings—show how qualitative themes explain quantitative trends",
+  "C. Only report qualitative findings",
+  "D. Combine datasets without respect to methods"], answer:1,
+  rationale:"Joint displays and triangulation integrate data to produce coherent, complementary insights across methods."},
+
+/* D - Social Welfare Policies, Programs & Services (31-60) - 30 items */
+{ id: 31, domain:'D', question:"A municipal social welfare officer must explain the purpose of the Pantawid Pamilyang Pilipino Program (4Ps) to barangay leaders. Which statement is most accurate?", choices:[
+  "A. 4Ps is a universal basic income program for all households",
+  "B. 4Ps is a conditional cash transfer aimed at reducing short-term poverty and investing in health and education among poor households",
+  "C. 4Ps provides loans for small businesses",
+  "D. 4Ps only gives one-time grants"], answer:1,
+  rationale:"4Ps is a conditional cash transfer program targeting poor households to improve health, nutrition and education outcomes."},
+
+{ id: 32, domain:'D', question:"An LGU wants to craft a local ordinance to expand day care services. Which legal and administrative step is essential first?", choices:[
+  "A. Implement without budget",
+  "B. Conduct a needs assessment, project costing, and include provisions in the local development plan and budget process",
+  "C. Rely solely on NGOs to fund it",
+  "D. Use national funds without local approval"], answer:1,
+  rationale:"Local policy must be grounded in needs assessment, budget planning, and integration into development plans for legality and sustainability."},
+
+{ id: 33, domain:'D', question:"A social worker evaluates the effectiveness of a feeding program funded by a donor. Which outcome measure best reflects nutritional impact?", choices:[
+  "A. Number of meals distributed",
+  "B. Changes in prevalence of stunting or underweight among target children over time",
+  "C. Amount of donor funds spent",
+  "D. Volunteer hours logged"], answer:1,
+  rationale:"Impact on malnutrition is best measured by anthropometric indicators (stunting, underweight) rather than distribution counts alone."},
+
+{ id: 34, domain:'D', question:"A policy analyst notes overlapping services among several agencies for the elderly. What policy solution improves coherence?", choices:[
+  "A. Each agency continues separate programming",
+  "B. Develop an inter-agency coordination mechanism and a harmonized service delivery framework with clear roles",
+  "C. Eliminate one agency abruptly",
+  "D. Outsource to private firms without coordination"], answer:1,
+  rationale:"Inter-agency coordination and agreed service frameworks reduce fragmentation, duplication, and gaps in coverage."},
+
+{ id: 35, domain:'D', question:"A national law mandates special protection for Indigenous Peoples (IPs). As a social worker designing a program, what is an important compliance step?", choices:[
+  "A. Proceed without consultation",
+  "B. Obtain Free, Prior and Informed Consent (FPIC) and engage IP representatives in program design",
+  "C. Require IPs to conform to standard templates",
+  "D. Use IP lands without consent"], answer:1,
+  rationale:"FPIC and meaningful engagement are legal and ethical requirements when working with IP communities."},
+
+{ id: 36, domain:'D', question:"A municipality considers outsourcing core social services to contractors. As a social welfare administrator, what governance issue should you prioritize?", choices:[
+  "A. No oversight is needed",
+  "B. Contract monitoring, quality standards, and accountability mechanisms to protect beneficiaries",
+  "C. Only cost reduction matters",
+  "D. Outsource without service-level agreements"], answer:1,
+  rationale:"Outsourcing requires robust monitoring and clear service standards to ensure quality and accountability."},
+
+{ id: 37, domain:'D', question:"During disaster response, DSWD sets up temporary shelters. Which social welfare concern should be prioritized alongside shelter provision?", choices:[
+  "A. Only physical shelter matters",
+  "B. Protection concerns (child safeguarding, GBV prevention), health, sanitation, and psychosocial support",
+  "C. Media publicity",
+  "D. Political activities"], answer:1,
+  rationale:"Shelter must be integrated with protection, sanitation, health, and psychosocial services for comprehensive humanitarian response."},
+
+{ id: 38, domain:'D', question:"Your LGU aims to increase access to PhilHealth among informal workers. Which policy lever is most effective?", choices:[
+  "A. Assume informal workers will enroll themselves",
+  "B. Implement local enrollment drives with subsidy options and partnerships with community organizations",
+  "C. Limit benefits to formal workers",
+  "D. Require employer contributions only"], answer:1,
+  rationale:"Active enrollment campaigns, subsidies and community partnerships help extend coverage to hard-to-reach informal workers."},
+
+{ id: 39, domain:'D', question:"A national program offers livelihood grants but no training. What risk should social workers flag to policymakers?", choices:[
+  "A. Grants always guarantee success",
+  "B. Without capacity-building, grants may be unsustainable and lead to misuse; training and market linkages are crucial",
+  "C. Grants should be larger only",
+  "D. No follow-up is needed"], answer:1,
+  rationale:"Transfers must be complemented by skills training, mentorship, and market access to enhance sustainability."},
+
+{ id: 40, domain:'D', question:"A DSWD frontline worker receives complaints about conditionalities being enforced insensitively. Which policy implementation principle should be reinforced?", choices:[
+  "A. Strict enforcement without discretion",
+  "B. Respect, dignity, and client-centered approaches while implementing program conditions with clear communication",
+  "C. Public shaming of non-compliant beneficiaries",
+  "D. Remove all conditionalities immediately"], answer:1,
+  rationale:"Implementing conditional programs requires sensitive, respectful communication and support to beneficiaries to avoid harm."},
+
+{ id: 41, domain:'D', question:"A social planner needs to design monitoring indicators for a barangay livelihood project. Which indicator mix is appropriate?", choices:[
+  "A. Only output metrics (number trained)",
+  "B. Combination of input, output, outcome (e.g., income change), and qualitative beneficiary feedback",
+  "C. Only financial reports",
+  "D. Only anecdotal stories"], answer:1,
+  rationale:"A balanced set of indicators captures resources, activities, short-term outputs, outcomes, and beneficiary perspectives."},
+
+{ id: 42, domain:'D', question:"An LGU plans to implement a cash-for-work program during flooding. Which safeguard ensures it does not exploit vulnerable households?", choices:[
+  "A. Work with no safety protocols",
+  "B. Ensure fair pay, safe working conditions, transparent selection, and consideration of people with caregiving roles",
+  "C. Exempt women from payment",
+  "D. Allow child labor"], answer:1,
+  rationale:"Cash-for-work must guarantee fair compensation, safety, non-discrimination, and avoid exacerbating vulnerabilities."},
+
+{ id: 43, domain:'D', question:"A county-level policy aims to mainstream GAD (Gender and Development). What is a practical step for mainstreaming?", choices:[
+  "A. Paper-only policy without budget",
+  "B. Gender analysis, dedicated budget lines, and capacity-building for staff to implement gender-responsive services",
+  "C. Assume staff know how to mainstream",
+  "D. Ignore sex-disaggregated data"], answer:1,
+  rationale:"Mainstreaming requires analysis, budget, and staff capability to operationalize gender-sensitive programs."},
+
+{ id: 44, domain:'D', question:"A national shelter policy requires land-use compliance. A local community lacks safe land for relocation. What is an ethical policy alternative?", choices:[
+  "A. Force relocation to distant areas",
+  "B. Explore in-situ upgrading, negotiated land tenure solutions, and participatory resettlement planning",
+  "C. Ignore safety standards",
+  "D. Evict without consultation"], answer:1,
+  rationale:"In-situ upgrading and negotiated tenure solutions can meet safety needs while minimizing social disruption and respecting rights."},
+
+{ id: 45, domain:'D', question:"You review a social pension program and find low take-up among eligible elderly women. What administrative barrier is most likely and how to address it?", choices:[
+  "A. Elderly intentionally avoid benefits",
+  "B. Complex registration requirements and lack of information—address with mobile registration and info campaigns",
+  "C. Only men should receive pensions",
+  "D. Reduce benefit amounts"], answer:1,
+  rationale:"Administrative complexity and information gaps reduce uptake; mobile registration and outreach improve access."},
+
+{ id: 46, domain:'D', question:"A pilot program for survivors of trafficking needs a referral pathway. Which partnership is essential?", choices:[
+  "A. Work alone without partners",
+  "B. Multi-sectoral linkages with law enforcement, health, legal aid, and livelihood services for survivor-centered care",
+  "C. Only focus on shelter",
+  "D. Only publicize cases"], answer:1,
+  rationale:"Trafficking responses require coordinated services across sectors to address protection, health, legal, and reintegration needs."},
+
+{ id: 47, domain:'D', question:"An evaluator finds significant variability in service quality across barangays offering the same national program. What policy recommendation should be made?", choices:[
+  "A. Centralize all services",
+  "B. Standardize core service protocols while allowing local adaptations and invest in capacity-building where gaps exist",
+  "C. Close weaker barangays",
+  "D. Privatize the program fully"], answer:1,
+  rationale:"Standards ensure consistent quality but local adaptation and capacity-building help contextualize delivery."},
+
+{ id: 48, domain:'D', question:"A national mental health policy encourages community-based services. Which program design element enables integration at LGU level?", choices:[
+  "A. Centralized psychiatric hospitals only",
+  "B. Training barangay health workers, establishing referral pathways, and including psychosocial care in primary health services",
+  "C. Only medication distribution",
+  "D. No community involvement"], answer:1,
+  rationale:"Integration requires local capacity, referral systems, and psychosocial services embedded in primary care."},
+
+{ id: 49, domain:'D', question:"A cash transfer program is being evaluated for leakage. Which monitoring mechanism helps reduce corruption?", choices:[
+  "A. Opaque beneficiary lists",
+  "B. Transparent registers, community validation, biometric IDs where appropriate, and grievance redress mechanisms",
+  "C. Only paper records kept secret",
+  "D. No audits"], answer:1,
+  rationale:"Transparency, community validation and grievance systems help detect and prevent leakage and misuse."},
+
+{ id: 50, domain:'D', question:"You are to advise on scale-up of a successful local pilot for early childhood development (ECD). What scale-up principle ensures quality is maintained?", choices:[
+  "A. Rapid national roll-out without adaptation",
+  "B. Phased expansion with training, supervision, and systems strengthening while monitoring fidelity",
+  "C. Assume success will transfer automatically",
+  "D. Replace local staff with outsiders"], answer:1,
+  rationale:"Phased scale-up with training and supervision preserves program fidelity while allowing local adaptation and learning."},
+
+{ id: 51, domain:'D', question:"A municipal SWO audits NGO partners providing social services. Which contract element is essential to ensure accountability?", choices:[
+  "A. Vague deliverables",
+  "B. Clear service-level indicators, reporting requirements, and penalties for non-compliance",
+  "C. No reporting required",
+  "D. Only verbal agreements"], answer:1,
+  rationale:"Contracts should specify deliverables, indicators, and reporting to enable performance monitoring and accountability."},
+
+{ id: 52, domain:'D', question:"A local government wants to institutionalize volunteer community health workers. Which policy is important for sustainability?", choices:[
+  "A. Volunteers work without any support",
+  "B. Define training, stipends/allowances, supervision, and integration into the formal health system",
+  "C. Rely on volunteer goodwill only",
+  "D. No record-keeping"], answer:1,
+  rationale:"Sustainability requires capacity-building, modest compensation, supervision, and role clarity within health systems."},
+
+{ id: 53, domain:'D', question:"A social welfare program aims to reach street dwellers. Which outreach strategy is most appropriate?", choices:[
+  "A. Expect them to go to the office",
+  "B. Mobile outreach teams, trust-building, and low-threshold services meeting people where they are",
+  "C. Arrest street dwellers for non-attendance",
+  "D. Require complex documentation first"], answer:1,
+  rationale:"Low-threshold, mobile outreach meets marginalized populations and builds trust to increase service uptake."},
+
+{ id: 54, domain:'D', question:"A proposed policy mandates data-sharing across agencies for social protection. What data governance issue must be addressed?", choices:[
+  "A. Share freely without safeguards",
+  "B. Privacy, consent, data security, and clear protocols for data use and access control",
+  "C. Publish all beneficiary data online",
+  "D. No policy needed"], answer:1,
+  rationale:"Inter-agency data sharing must include privacy protections, consent mechanisms, and secure governance frameworks."},
+
+{ id: 55, domain:'D', question:"A rural health insurance outreach shows low male enrollment. Which policy tweak could increase male participation?", choices:[
+  "A. Assume men are uninterested",
+  "B. Tailor outreach times and messages to men’s schedules and target workplaces or farmer groups",
+  "C. Only reach women",
+  "D. Increase premiums for men"], answer:1,
+  rationale:"Adapting outreach to men's work schedules and channels increases accessibility and uptake among male populations."},
+
+{ id: 56, domain:'D', question:"A national committee requests inputs on social welfare legislation. As a practitioner, what is a key perspective to bring?", choices:[
+  "A. Only legal language matters",
+  "B. Ground the law in evidence, operational feasibility, budget implications, and rights-based approaches",
+  "C. Ignore field realities",
+  "D. Advocate for unfunded mandates"], answer:1,
+  rationale:"Legislation should be evidence-informed, operationally feasible, funded, and rights-based to be implementable and ethical."},
+
+{ id: 57, domain:'D', question:"A barangay-level child protection protocol is unclear about mandatory reporting. What practice should be established?", choices:[
+  "A. Leave discretion to anyone",
+  "B. Clear reporting pathways, designated focal persons, and confidentiality safeguards with referral options",
+  "C. Publicly name alleged perpetrators",
+  "D. Ignore reporting"], answer:1,
+  rationale:"Child protection requires clear, confidential reporting pathways and designated personnel to ensure timely and safe responses."},
+
+{ id: 58, domain:'D', question:"A conditional cash transfer linkage to health services sees low clinic attendance due to transport costs. What policy adaptation addresses this barrier?", choices:[
+  "A. Remove health conditionalities",
+  "B. Provide transport subsidies, mobile health services, or decentralized service points",
+  "C. Penalize beneficiaries for non-attendance",
+  "D. Limit benefits"], answer:1,
+  rationale:"Addressing transport barriers through subsidies or decentralization supports beneficiaries to comply and benefit from health conditions."},
+
+{ id: 59, domain:'D', question:"An LGU wants to institutionalize disaster mental health services. Which staffing model supports sustainability?", choices:[
+  "A. Rely only on external consultants during emergencies",
+  "B. Train local health/social workers and integrate psychosocial support into routine services with supervision",
+  "C. No training required",
+  "D. Use volunteers only without supervision"], answer:1,
+  rationale:"Local capacity-building and integration into routine systems plus supervision ensure sustained service availability."},
+
+{ id: 60, domain:'D', question:"The national social welfare budget is tight. Which program prioritization principle should inform allocations?", choices:[
+  "A. First-come, first-served",
+  "B. Equity, proven effectiveness, and targeting to the most vulnerable should guide prioritization",
+  "C. Fund only urban programs",
+  "D. Prioritize political projects"], answer:1,
+  rationale:"Resource prioritization should be guided by equity, evidence of impact, and targeting of vulnerable groups."},
+
+/* F - Social Welfare Agency Administration (61-80) - 20 items */
+{ id: 61, domain:'F', question:"As agency director you notice high staff turnover in frontline positions. Which administrative response is most effective?", choices:[
+  "A. Ignore turnover",
+  "B. Assess reasons (workload, pay, supervision) and implement retention strategies like supervision, training, and fair compensation",
+  "C. Replace with volunteers",
+  "D. Reduce staff benefits"], answer:1,
+  rationale:"Understanding turnover causes and addressing workload, supervision, and compensation supports staff retention."},
+
+{ id: 62, domain:'F', question:"A social welfare agency seeks to mainstream gender in operations. Which HR practice contributes to this goal?", choices:[
+  "A. No gender policies",
+  "B. Gender-responsive recruitment, training, and family-friendly workplace policies",
+  "C. Only hire men",
+  "D. Block gender training"], answer:1,
+  rationale:"Gender-responsive HR practices make organizations more inclusive and improve service sensitivity."},
+
+{ id: 63, domain:'F', question:"Your agency needs an M&E framework. Which element ensures learning, not just compliance?", choices:[
+  "A. Only compliance indicators",
+  "B. Feedback loops, regular reflection sessions, and mechanisms to adapt programs based on findings",
+  "C. Data collection without use",
+  "D. Punitive data audits only"], answer:1,
+  rationale:"M&E for learning requires mechanisms to reflect on findings and adapt program design and implementation."},
+
+{ id: 64, domain:'F', question:"An NGO partner requests multi-year funding. As a fund manager, what assessment is critical before commitment?", choices:[
+  "A. Trust the request without checks",
+  "B. Institutional capacity, governance, financial systems, and past performance to assess absorptive and implementation capacity",
+  "C. Provide funds without oversight",
+  "D. Only consider location"], answer:1,
+  rationale:"Multi-year funding requires confidence in the partner’s capacity and governance to manage sustained resources."},
+
+{ id: 65, domain:'F', question:"During a crisis, staff report ethical dilemmas about resource allocation. Which governance structure helps make transparent decisions?", choices:[
+  "A. Individual discretion only",
+  "B. Clear triage criteria, multi-stakeholder decision committees, and documented rationale for allocations",
+  "C. Random distribution",
+  "D. Political directives only"], answer:1,
+  rationale:"Transparent triage criteria and committee decisions promote fairness and ethical accountability in scarce-resource settings."},
+
+{ id: 66, domain:'F', question:"Your agency wants to digitalize client records. What safeguard is essential to protect clients' privacy?", choices:[
+  "A. Store everything publicly",
+  "B. Data encryption, access controls, informed consent, and staff training on confidentiality",
+  "C. Share credentials freely",
+  "D. No backups"], answer:1,
+  rationale:"Digital systems must include technical and policy safeguards to protect confidentiality and client data privacy."},
+
+{ id: 67, domain:'F', question:"A new supervisor struggles with giving constructive feedback. Which supervisory approach best supports staff development?", choices:[
+  "A. Criticize publicly",
+  "B. Reflective supervision combining supportive and corrective feedback, goal-setting, and skills coaching",
+  "C. Micromanage every task",
+  "D. Avoid supervision"], answer:1,
+  rationale:"Reflective supervision nurtures staff growth through balanced feedback, coaching, and collaborative problem-solving."},
+
+{ id: 68, domain:'F', question:"An agency implements performance-based incentives. What is a risk to monitor?", choices:[
+  "A. Always improves quality",
+  "B. Perverse incentives that encourage quantity over quality or gaming of indicators; ensure balanced metrics and safeguards",
+  "C. No need to monitor",
+  "D. Only reward managers"], answer:1,
+  rationale:"Performance incentives can distort behavior if metrics are unbalanced or easily gamed; monitoring and diverse indicators mitigate risks."},
+
+{ id: 69, domain:'F', question:"Your office needs to plan a continuing learning program for social workers. Which format supports field applicability?", choices:[
+  "A. One-off lectures only",
+  "B. Blended learning with practical workshops, mentorship, and reflective supervision for skill transfer",
+  "C. Only theoretical seminars with no practice",
+  "D. No evaluation"], answer:1,
+  rationale:"Blended approaches and mentorship promote application of learning to practice and sustain competency development."},
+
+{ id: 70, domain:'F', question:"A NGO board requests financial reports. What financial control practice ensures stewardship of donor funds?", choices:[
+  "A. No oversight",
+  "B. Segregation of duties, audited accounts, and transparent reporting aligned with donor requirements",
+  "C. Single-person control over funds",
+  "D. Cryptic accounting"], answer:1,
+  rationale:"Segregation of duties and audits reduce risk of misuse and improve accountability to stakeholders."},
+
+{ id: 71, domain:'F', question:"A social welfare agency plans to mainstream anti-oppressive practice. Which organizational policy supports this?", choices:[
+  "A. Maintain status quo",
+  "B. Anti-discrimination policies, inclusive hiring, grievance mechanisms, and staff training on power dynamics",
+  "C. Prioritize only efficiency",
+  "D. Ignore staff feedback"], answer:1,
+  rationale:"Organizational anti-oppression requires policies, training, and mechanisms to address discrimination and power imbalances."},
+
+{ id: 72, domain:'F', question:"A regional office must prepare a contingency plan for pandemics. Which element is essential for continuity of services?", choices:[
+  "A. Close offices entirely",
+  "B. Remote service delivery options, staff rotation, supply chain plans, and communication protocols",
+  "C. Suspend all services indefinitely",
+  "D. No coordination with health authorities"], answer:1,
+  rationale:"Service continuity plans need alternatives for delivery, workforce management, and coordination with health responses."},
+
+{ id: 73, domain:'F', question:"You’re designing a client feedback mechanism. Which design principle increases accessibility for low-literacy populations?", choices:[
+  "A. Only long written surveys",
+  "B. Use pictorial feedback tools, focus groups, and in-person feedback channels through community workers",
+  "C. Online-only forms requiring typing",
+  "D. Complex rating scales"], answer:1,
+  rationale:"Pictorial and interpersonal feedback mechanisms increase accessibility for people with low literacy or limited internet access."},
+
+{ id: 74, domain:'F', question:"Your agency needs to ensure compliance with child protection standards. Which HR process is most relevant?", choices:[
+  "A. No recruitment checks",
+  "B. Background checks, child protection policies, staff training, and clear reporting procedures",
+  "C. Hire without vetting",
+  "D. Only verbal assurances"], answer:1,
+  rationale:"Rigorous vetting, policies and training help prevent harm and ensure safe recruitment and practice around children."},
+
+{ id: 75, domain:'F', question:"An agency seeks to measure staff well-being. Which indicator provides actionable insight?", choices:[
+  "A. Number of leaves taken only",
+  "B. Staff burnout assessments, supervision frequency, and job satisfaction surveys with follow-up actions",
+  "C. Ignore staff input",
+  "D. Compare only with other agencies"], answer:1,
+  rationale:"Multiple measures and acting on findings can inform interventions to improve workplace well-being and retention."},
+
+{ id: 76, domain:'F', question:"You must design a grievance redress mechanism for beneficiaries. Which feature enhances fairness?", choices:[
+  "A. Anonymous and accessible reporting channels, clear timelines, and independent review of complaints",
+  "B. Only formal letters accepted",
+  "C. No confidentiality",
+  "D. Delay responses indefinitely"], answer:0,
+  rationale:"Accessible, confidential, and independently reviewed mechanisms ensure fairness and trust in grievance handling."},
+
+{ id: 77, domain:'F', question:"A donor requests evidence of organizational learning. Which product best demonstrates institutional learning?", choices:[
+  "A. Same program repeated without changes",
+  "B. Documentation of lessons learned, adaptations made, and evidence showing improved outcomes over time",
+  "C. Only financial statements",
+  "D. Anecdotes without analysis"], answer:1,
+  rationale:"Documented lessons and program adaptations show that the organization is learning and improving practices."},
+
+{ id: 78, domain:'F', question:"An agency prepares for audit. Which practice reduces audit risk?", choices:[
+  "A. Keep disorganized records",
+  "B. Maintain organized, dated records, receipts, and clear expense justifications tied to budgets",
+  "C. Destroy paperwork",
+  "D. Fabricate documents"], answer:1,
+  rationale:"Transparent, well-organized records make audits smoother and reduce findings of non-compliance."},
+
+{ id: 79, domain:'F', question:"Your office needs to set performance indicators for social workers. Which indicator balances quantity and quality?", choices:[
+  "A. Number of cases closed only",
+  "B. Caseload size plus client satisfaction and quality-of-practice measures (e.g., case plan completeness)",
+  "C. Speed alone",
+  "D. Only hours billed"], answer:1,
+  rationale:"Combining workload with quality measures ensures services are efficient but also meet professional standards."},
+
+{ id: 80, domain:'F', question:"A new executive wants to build partnerships. Which partnership strategy fosters sustainability?", choices:[
+  "A. Short-term agreements only",
+  "B. Memoranda of understanding with shared objectives, joint planning, and clear resource responsibilities",
+  "C. One-sided partnerships",
+  "D. Avoid community input"], answer:1,
+  rationale:"Formal agreements with shared planning and responsibility support durable, mutually beneficial partnerships."},
+
+/* G - Social Welfare Project/Program Development & Management (81-100) - 20 items */
+{ id: 81, domain:'G', question:"You are developing a community livelihood project. What is the correct first step in the project management cycle?", choices:[
+  "A. Start implementation immediately",
+  "B. Conduct community needs assessment and context analysis to identify priority issues",
+  "C. Write the final report first",
+  "D. Launch fundraising without planning"], answer:1,
+  rationale:"A proper needs assessment grounds project design in real community priorities and evidence before planning."},
+
+{ id: 82, domain:'G', question:"In project planning you define SMART objectives. Which is an example of a SMART objective for a skills training project?", choices:[
+  "A. Improve skills someday",
+  "B. Train 120 out-of-school youth in basic carpentry and certify 80% within 9 months",
+  "C. Provide unspecified training",
+  "D. Increase happiness"], answer:1,
+  rationale:"This objective is Specific, Measurable, Achievable, Relevant, and Time-bound (SMART)."},
+
+{ id: 83, domain:'G', question:"During stakeholder mapping you identify a powerful but opposed LGU official. What is a prudent strategy?", choices:[
+  "A. Ignore them",
+  "B. Engage early, understand concerns, and seek common ground or mitigation strategies",
+  "C. Publicly confront them",
+  "D. Sidestep all local actors"], answer:1,
+  rationale:"Early engagement with influential stakeholders helps mitigate opposition and find constructive solutions."},
+
+{ id: 84, domain:'G', question:"Your budget includes a 10% contingency line. What is the main purpose of this contingency?", choices:[
+  "A. To add profit to the project manager",
+  "B. To address unforeseen costs and reduce financial risk during implementation",
+  "C. To hide expenditures",
+  "D. For staff bonuses only"], answer:1,
+  rationale:"Contingency funds manage unpredictability and ensure the project can adapt to reasonable unforeseen expenses."},
+
+{ id: 85, domain:'G', question:"A community project proposes using the Harmonized GAD Guidelines. What benefit does HGDG bring to project design?", choices:[
+  "A. It is irrelevant",
+  "B. Ensures gender-responsive analysis, budgets, and monitoring throughout the project lifecycle",
+  "C. Promotes one-size-fits-all gender roles",
+  "D. Only adds paperwork"], answer:1,
+  rationale:"HGDG helps mainstream gender in planning, budgeting and monitoring to ensure equitable outcomes."},
+
+{ id: 86, domain:'G', question:"A project faces delays due to procurement bottlenecks. As project manager what immediate action should you take?", choices:[
+  "A. Ignore procurement rules",
+  "B. Review procurement plans, expedite critical tenders, and transparently document any emergency procedures used",
+  "C. Cancel the project",
+  "D. Hide delays"], answer:1,
+  rationale:"Addressing procurement issues through review and transparent expedited processes helps reduce delays while maintaining accountability."},
+
+{ id: 87, domain:'G', question:"Your M&E plan includes outcome indicators but no baseline. Why is collecting a baseline important?", choices:[
+  "A. Baselines are optional",
+  "B. Baselines allow measurement of change attributable to the project over time",
+  "C. Baselines are only for donors",
+  "D. Baselines complicate reports"], answer:1,
+  rationale:"A baseline provides the pre-intervention status needed to assess project impact and measure change."},
+
+{ id: 88, domain:'G', question:"A project uses participatory monitoring. Which activity best demonstrates participatory M&E?", choices:[
+  "A. Only external consultants collect data",
+  "B. Community members collect data, analyze results in feedback sessions, and co-design adjustments",
+  "C. No community involvement",
+  "D. Only digital dashboards for managers"], answer:1,
+  rationale:"Participatory M&E empowers communities to track progress and shape project adaptations based on local insights."},
+
+{ id: 89, domain:'G', question:"Your exit strategy aims for sustainability. Which element makes an exit plan realistic?", choices:[
+  "A. Abrupt withdrawal after funding ends",
+  "B. Gradual handover, capacity-building for local actors, and secured local funding or linkages",
+  "C. Leave operations to chance",
+  "D. Remove all local decision-making"], answer:1,
+  rationale:"A phased handover and capacity-building with funding linkages increase the likelihood of program continuity."},
+
+{ id: 90, domain:'G', question:"A participatory project requires community co-financing. Which risk should be assessed?", choices:[
+  "A. No risk",
+  "B. Affordability and potential exclusion of the poorest who cannot co-finance; mitigate with subsidies for vulnerable households",
+  "C. Demand all funds upfront",
+  "D. Expect everyone to contribute equally"], answer:1,
+  rationale:"Co-financing can exclude the poorest; mitigation measures like subsidies prevent deepening inequities."},
+
+{ id: 91, domain:'G', question:"You must write a project logframe. Which element should link activities and outcomes clearly?", choices:[
+  "A. Only a list of activities",
+  "B. Clear assumptions and indicators specifying inputs → outputs → outcomes with means of verification",
+  "C. No indicators",
+  "D. Vague goals"], answer:1,
+  rationale:"A logframe connects activities to outcomes, with assumptions and measurable indicators to track progress."},
+
+{ id: 92, domain:'G', question:"A community project aims to scale through partnerships. Which partner type strengthens local implementation capacity?", choices:[
+  "A. Distant donors only",
+  "B. Local NGOs/POs with grassroots presence and LGU technical support",
+  "C. Only international consultants",
+  "D. Celebrity endorsements only"], answer:1,
+  rationale:"Local partners with grassroots networks and LGU backing help ground and sustain implementation."},
+
+{ id: 93, domain:'G', question:"A project proposes measuring impact via randomized controlled trial (RCT). Which ethical concern must be addressed?", choices:[
+  "A. RCTs have no ethical concerns",
+  "B. Equipoise, informed consent, and ensuring that withholding interventions does not harm control groups",
+  "C. Use coercion for enrollment",
+  "D. Never publish negative results"], answer:1,
+  rationale:"RCT ethics requires equipoise, voluntary participation, and safeguards so control groups are not unfairly disadvantaged."},
+
+{ id: 94, domain:'G', question:"A project evaluation finds unintended negative effects on women’s workloads. What corrective action should be taken?", choices:[
+  "A. Ignore the finding",
+  "B. Adjust program design to reduce unpaid care burdens and provide time-saving supports or technology",
+  "C. Increase workloads further",
+  "D. Blame participants"], answer:1,
+  rationale:"Programs must adapt to mitigate negative gendered impacts, for instance by providing supports that reduce care burdens."},
+
+{ id: 95, domain:'G', question:"Your proposal budget lines for capacity building are frequently cut. How do you justify these costs to financiers?", choices:[
+  "A. Capacity building is optional",
+  "B. Present evidence that capacity investment reduces long-term costs and improves program outcomes and sustainability",
+  "C. Hide the cuts",
+  "D. Reallocate to short-term activities only"], answer:1,
+  rationale:"Capacity investments are cost-effective in the long run by improving program quality and sustainability—this rationale supports funding."},
+
+{ id: 96, domain:'G', question:"You design a monitoring dashboard for field supervisors. Which feature improves usability in low-bandwidth settings?", choices:[
+  "A. Graphics-heavy pages only",
+  "B. Simple text summaries, compressed data, and offline data entry options for syncing later",
+  "C. Real-time video feeds only",
+  "D. Require constant streaming"], answer:1,
+  rationale:"Lightweight dashboards and offline capabilities make monitoring feasible in low-bandwidth or remote settings."},
+
+{ id: 97, domain:'G', question:"A project includes both infrastructure and social components. Which sequencing optimizes community acceptance?", choices:[
+  "A. Build infrastructure without consultations",
+  "B. Conduct social preparation first (consultation, capacity building), then construct with community participation",
+  "C. Only do infrastructure",
+  "D. Skip social components"], answer:1,
+  rationale:"Social preparation builds ownership and reduces conflict during infrastructure implementation, improving acceptance."},
+
+{ id: 98, domain:'G', question:"A mid-term review finds low beneficiary satisfaction. What is the most practical next step?", choices:[
+  "A. Ignore feedback",
+  "B. Hold rapid consultations to identify causes and implement targeted corrective actions during the remaining project period",
+  "C. Cancel the project immediately",
+  "D. Blame external factors only"], answer:1,
+  rationale:"Rapid participatory reviews identify fixable issues and enable timely adjustments that improve outcomes before project close."},
+
+{ id: 99, domain:'G', question:"A proposal requires outcome indicators disaggregated by sex and poverty quintile. Why is disaggregation important?", choices:[
+  "A. It is unnecessary",
+  "B. It reveals differential impacts and ensures interventions do not leave behind marginalized subgroups",
+  "C. It complicates reports without value",
+  "D. It breaches privacy always"], answer:1,
+  rationale:"Disaggregation uncovers equity patterns and supports targeted actions to reach those most disadvantaged."},
+
+{ id: 100, domain:'G', question:"A community-based project aims to hand over a microenterprise program to a cooperative. What capacity benchmark indicates readiness?", choices:[
+  "A. Verbal promises only",
+  "B. Demonstrable governance structures, bookkeeping systems, savings buffers, and market linkages",
+  "C. No records but enthusiasm",
+  "D. Reliance on a single leader"], answer:1,
+  rationale:"Concrete governance, financial systems and market linkages signal organizational capacity for sustainable takeover."}
+];
+
+/* Domain labels */
+const DOMAIN_LABELS = {
+  'A': 'Social Work Statistics',
+  'B': 'Social Work Research I',
+  'C': 'Social Work Research II',
+  'D': 'Social Welfare Policies, Programs & Services',
+  'F': 'Social Welfare Agency Administration',
+  'G': 'Project/Program Development & Management'
+};
+
+/* App state & DOM refs (similar functionality to hbse file) */
+let pool = [];
+let currentSet = [];
+let userAnswers = {};
+let currentIndex = 0;
+let totalToTake = 100;
+let timerMode = 'elapsed';
+let timerInterval = null;
+let startTime = null;
+let paused = false;
+let elapsedSeconds = 0;
+let countdownSeconds = 0;
+
+const startBtn = document.getElementById('startBtn');
+const numItemsEl = document.getElementById('numItems');
+const domainFilterEl = document.getElementById('domainFilter');
+const timerModeEl = document.getElementById('timerMode');
+const countdownInput = document.getElementById('countdownInput');
+const countdownMins = document.getElementById('countdownMins');
+
+const quizCard = document.getElementById('quizCard');
+const qText = document.getElementById('qText');
+const choicesEl = document.getElementById('choices');
+const qDomainText = document.getElementById('qDomainText');
+const domainBadge = document.getElementById('domainBadge');
+
+const currentIndexEl = document.getElementById('currentIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const answeredCountEl = document.getElementById('answeredCount');
+const remainingCountEl = document.getElementById('remainingCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const pauseBtn = document.getElementById('pauseBtn');
+const quitBtn = document.getElementById('quitBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+const resultCard = document.getElementById('resultCard');
+const overallScoreEl = document.getElementById('overallScore');
+const overallTotalEl = document.getElementById('overallTotal');
+const timeSpentEl = document.getElementById('timeSpent');
+const domainBreakdownEl = document.getElementById('domainBreakdown');
+const reviewListEl = document.getElementById('reviewList');
+const summaryGridEl = document.getElementById('summaryGrid');
+const restartBtn = document.getElementById('restartBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+  return array;
+}
+
+function formatTime(s){
+  const h = Math.floor(s/3600); s%=3600;
+  const m = Math.floor(s/60); const sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function loadPool(){
+  const domain = domainFilterEl.value;
+  pool = (domain === 'ALL') ? [...QUESTIONS] : QUESTIONS.filter(q=>q.domain===domain);
+}
+
+startBtn.addEventListener('click', ()=>{
+  loadPool();
+  const selected = numItemsEl.value;
+  if(selected === 'All') totalToTake = pool.length;
+  else totalToTake = parseInt(selected,10);
+  if(totalToTake > pool.length){
+    alert(`Only ${pool.length} questions available for selected domain. Using ${pool.length} instead.`);
+    totalToTake = pool.length;
+  }
+  timerMode = timerModeEl.value;
+  if(timerMode === 'countdown'){
+    countdownSeconds = Math.max(60, parseInt(countdownMins.value,10) * 60);
+  }
+  initQuiz();
+});
+
+timerModeEl.addEventListener('change', ()=>{
+  if(timerModeEl.value === 'countdown') countdownInput.style.display = 'inline-block';
+  else countdownInput.style.display = 'none';
+});
+
+function initQuiz(){
+  userAnswers = {};
+  currentIndex = 0;
+  elapsedSeconds = 0;
+  paused = false;
+  startTime = Date.now();
+  currentSet = shuffle(pool.slice()).slice(0,totalToTake);
+  currentSet = currentSet.map(q=>{
+    const choices = q.choices.map((c,i)=>({c,i}));
+    shuffle(choices);
+    const newIndex = choices.findIndex(x=>x.i===q.answer);
+    return {...q, _shuffledChoices: choices.map(x=>x.c), _shuffledAnswerIndex: newIndex};
+  });
+  document.getElementById('totalIndex').textContent = currentSet.length;
+  domainBadge.textContent = (domainFilterEl.value==='ALL') ? 'ALL DOMAINS' : DOMAIN_LABELS[domainFilterEl.value];
+  document.getElementById('setupCard').classList?.add('hide');
+  quizCard.classList.remove('hide');
+  resultCard.classList.add('hide');
+  showQuestion(0);
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerMode === 'elapsed'){
+    timerDisplay.textContent = formatTime(0);
+    timerInterval = setInterval(()=>{ if(!paused){ elapsedSeconds++; timerDisplay.textContent = formatTime(elapsedSeconds); } },1000);
+  } else if(timerMode === 'countdown'){
+    timerDisplay.textContent = formatTime(countdownSeconds);
+    timerInterval = setInterval(()=>{
+      if(!paused){
+        if(countdownSeconds<=0){ submitQuiz(); clearInterval(timerInterval); }
+        else{ countdownSeconds--; timerDisplay.textContent = formatTime(countdownSeconds); elapsedSeconds++; }
+      }
+    },1000);
+  } else {
+    timerDisplay.textContent = 'No timer';
+  }
+}
+
+function showQuestion(idx){
+  if(idx<0) idx=0; if(idx>=currentSet.length) idx=currentSet.length-1;
+  currentIndex = idx;
+  const q = currentSet[idx];
+  currentIndexEl.textContent = idx+1;
+  qText.textContent = q.question;
+  qDomainText.textContent = DOMAIN_LABELS[q.domain];
+  choicesEl.innerHTML = '';
+  q._shuffledChoices.forEach((text,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="label">${'ABCD'[i]}</div><div style="flex:1">${text}</div>`;
+    if(userAnswers[q.id] && userAnswers[q.id].choice===i){
+      btn.style.borderColor = '#c7f0d7'; btn.style.background = '#f0fff4';
+    }
+    btn.addEventListener('click', ()=> handleAnswer(q, i));
+    choicesEl.appendChild(btn);
+  });
+  const answered = Object.keys(userAnswers).length;
+  answeredCountEl.textContent = answered;
+  remainingCountEl.textContent = (currentSet.length - answered);
+  prevBtn.disabled = (idx===0);
+  nextBtn.disabled = (idx===currentSet.length-1);
+}
+
+function handleAnswer(q, choiceIndex){
+  const t = Math.floor((Date.now()-startTime)/1000);
+  userAnswers[q.id] = {choice: choiceIndex, answeredAt: t};
+  saveAndAdvance();
+}
+
+function saveAndAdvance(){
+  showQuestion(currentIndex);
+  if(currentIndex < currentSet.length-1){
+    currentIndex++;
+    showQuestion(currentIndex);
+  } else {
+    if(Object.keys(userAnswers).length === currentSet.length){
+      submitQuiz();
+    } else {
+      for(let i=0;i<currentSet.length;i++){
+        if(!userAnswers[currentSet[i].id]){ showQuestion(i); return; }
+      }
+      submitQuiz();
+    }
+  }
+}
+
+prevBtn.addEventListener('click', ()=>{ if(currentIndex>0) showQuestion(currentIndex-1); });
+nextBtn.addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1) showQuestion(currentIndex+1); });
+
+pauseBtn.addEventListener('click', ()=>{ paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; });
+quitBtn.addEventListener('click', ()=>{ if(confirm('Quit the quiz? Your answers will be submitted.')) submitQuiz(); });
+
+function submitQuiz(){
+  if(timerInterval) clearInterval(timerInterval);
+  const results = currentSet.map(q=>{
+    const user = userAnswers[q.id];
+    const selectedIndex = user ? user.choice : null;
+    const correctIndex = q._shuffledAnswerIndex;
+    const correct = (selectedIndex === correctIndex);
+    return { id:q.id, text:q.question, domain:q.domain, choices:q._shuffledChoices, selectedIndex, correctIndex, correct, rationale:q.rationale };
+  });
+  const total = results.length;
+  const correctCount = results.filter(r=>r.correct).length;
+  displayResults(results, correctCount, total);
+}
+
+function displayResults(results, correctCount, total){
+  quizCard.classList.add('hide');
+  resultCard.classList.remove('hide');
+  overallScoreEl.textContent = correctCount;
+  overallTotalEl.textContent = total;
+  timeSpentEl.textContent = formatTime(elapsedSeconds);
+  const domains = {};
+  results.forEach(r=>{
+    if(!domains[r.domain]) domains[r.domain] = {total:0,correct:0};
+    domains[r.domain].total++; if(r.correct) domains[r.domain].correct++;
+  });
+  domainBreakdownEl.innerHTML = '';
+  for(const d of Object.keys(DOMAIN_LABELS)){
+    if(domains[d]){
+      const t = domains[d].total, c = domains[d].correct;
+      const el = document.createElement('div'); el.className='tile';
+      el.innerHTML = `<strong>${DOMAIN_LABELS[d]}</strong><div class="small">Score: ${c}/${t} (${Math.round(c/t*100)}%)</div>`;
+      domainBreakdownEl.appendChild(el);
+    }
+  }
+  summaryGridEl.innerHTML = '';
+  const overallTile = document.createElement('div'); overallTile.className='tile';
+  overallTile.innerHTML = `<strong>Overall</strong><div class="small">${correctCount}/${total} (${Math.round(correctCount/total*100)}%)</div>`;
+  summaryGridEl.appendChild(overallTile);
+  reviewListEl.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const wrapper = document.createElement('div'); wrapper.style.padding='10px'; wrapper.style.borderBottom='1px solid #f1f5f9';
+    const qnum = idx+1;
+    const userLabel = r.selectedIndex==null ? '<em>Unanswered</em>' : 'Your answer: <strong>' + 'ABCD'[r.selectedIndex] + '</strong>';
+    const correctLabel = 'Correct: <strong class="'+(r.correct?'correct':'incorrect')+'">' + 'ABCD'[r.correctIndex] + '</strong>';
+    wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="domain-badge">${DOMAIN_LABELS[r.domain]}</span> Q${qnum}: ${r.text}</div><div style="font-size:13px">${userLabel} · ${correctLabel}</div></div>
+      <div style="margin-top:8px">Choices:</div>
+      <div style="margin-top:6px">${r.choices.map((c,i)=>'<div style="font-size:13px"><strong>'+ 'ABCD'[i] +'.</strong> '+ c + (i===r.correctIndex ? ' <span class="correct">✔</span>' : '') + '</div>').join('')}</div>
+      <div class="rationale"><em>Rationale:</em> ${r.rationale}</div>`;
+    reviewListEl.appendChild(wrapper);
+  });
+}
+
+restartBtn.addEventListener('click', ()=>{ document.getElementById('setupCard').classList.remove('hide'); resultCard.classList.add('hide'); window.scrollTo(0,0); });
+
+downloadBtn.addEventListener('click', ()=>{
+  const data = { timestamp: new Date().toISOString(), domain: domainFilterEl.value, totalAsked: currentSet.length, answers: userAnswers };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='swpps_quiz_results.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* default settings */
+(function(){ domainFilterEl.value='ALL'; numItemsEl.value='100'; timerModeEl.value='elapsed'; })();
+</script>
+</body>
+</html>

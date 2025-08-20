@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HBSE — Philippine SWLE Practice Quiz (100 situational items)</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --accent:#0b63d6; --muted:#6b7280; --good:#0f9d58; --bad:#d93025;
+  }
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111;}
+  header{background:linear-gradient(90deg,#093c9f22,transparent);padding:14px 16px;border-bottom:1px solid #e6eef8;}
+  .wrap{max-width:980px;margin:18px auto;padding:12px;}
+  .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:18px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,input[type="number"]{padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+  button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 18px rgba(11,99,214,0.06)}
+  .meta{font-size:13px;color:var(--muted)}
+  .question-area{display:flex;gap:12px;flex-direction:column}
+  .qtext{font-weight:600;padding:8px 0;font-size:16px}
+  .choices{display:grid;gap:10px}
+  .choice{padding:12px;border-radius:10px;border:1px solid #e6eef8;background:#fbfdff;cursor:pointer;display:flex;gap:10px;align-items:center}
+  .choice:hover{background:#f0f8ff}
+  .choice .label{font-weight:700;width:22px;height:22px;border-radius:6px;background:#eef6ff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+  .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stats{font-size:13px;color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .hide{display:none}
+  .results{margin-top:16px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:13px}
+  .correct{color:var(--good);font-weight:700}
+  .incorrect{color:var(--bad);font-weight:700}
+  .domain-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+  .timer{font-weight:700}
+  /* Mobile adjustments */
+  @media (max-width:640px){
+    .top{flex-direction:column;align-items:flex-start}
+    .controls{width:100%}
+    .footer{flex-direction:column;align-items:flex-start}
+  }
+  /* subtle exam-like layout */
+  .question-count{background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e6eef8}
+  .review-list{max-height:420px;overflow:auto}
+  .rationale{font-size:13px;color:var(--muted);margin-top:6px}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+  .tile{padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eef2f7}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1>HBSE — SWLE Practice (PQF 6) — Situational Philippine Items (100)</h1>
+      <div class="meta">Interactive standalone quiz — situational, professional-level — mobile-friendly</div>
+    </div>
+    <div class="controls">
+      <label class="small">Items:
+        <select id="numItems"><option>20</option><option selected>50</option><option>100</option><option>200</option><option>All</option></select>
+      </label>
+      <label class="small">Domain:
+        <select id="domainFilter">
+          <option value="ALL">ALL DOMAINS</option>
+          <option value="A">Philippine Social Realities & Social Work</option>
+          <option value="B">Filipino Personality & Social Work</option>
+          <option value="C">Social Work & Social Deviation</option>
+          <option value="D">Social Environment (Family/Group/Community/Organization)</option>
+          <option value="E">Social Change & Development Perspectives</option>
+        </select>
+      </label>
+      <label class="small">Timer mode:
+        <select id="timerMode"><option value="none">None (no limit)</option><option value="elapsed" selected>Elapsed</option><option value="countdown">Countdown</option></select>
+      </label>
+      <label class="small" id="countdownInput" style="display:none">Duration (mins):
+        <input type="number" id="countdownMins" min="1" value="120" style="width:88px">
+      </label>
+      <button id="startBtn">Start Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupCard" class="card">
+    <div class="meta">Before you start: choose number of items and domain filter. Questions are situational and set in the Philippine context.</div>
+    <div style="margin-top:8px;color:var(--muted);font-size:13px">
+      Tip: Use <strong>Domain</strong> to practice targeted areas. Choose <strong>All</strong> or specific domain. The system will randomize questions and choices each attempt.
+    </div>
+  </div>
+
+  <div id="quizCard" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <span id="domainBadge" class="domain-badge">ALL DOMAINS</span>
+        <span class="question-count">Q <span id="currentIndex">1</span> / <span id="totalIndex">100</span></span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="timer">Time: <span id="timerDisplay">00:00:00</span></div>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="quitBtn" class="secondary">Quit</button>
+      </div>
+    </div>
+
+    <div class="question-area" style="margin-top:12px">
+      <div id="qDomain" class="meta small">Domain: <strong id="qDomainText"></strong></div>
+      <div id="qText" class="qtext">Question text</div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="footer">
+      <div class="stats">Answered: <span id="answeredCount">0</span> | Remaining: <span id="remainingCount">0</span></div>
+      <div>
+        <button id="prevBtn" class="secondary">Prev</button>
+        <button id="nextBtn" class="secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h3>Results</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div style="margin-top:8px;font-size:14px">
+      <strong>Overall Score:</strong> <span id="overallScore"></span> / <span id="overallTotal"></span>
+      &nbsp; • &nbsp; <strong>Time Spent:</strong> <span id="timeSpent"></span>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Per-domain breakdown</h4>
+      <div id="domainBreakdown"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Review — All Questions</h4>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="restartBtn">Restart & Shuffle</button>
+      <button id="downloadBtn" class="secondary">Download Results (JSON)</button>
+    </div>
+  </div>
+
+  <div id="notes" class="card" style="margin-top:12px">
+    <strong>Notes</strong>
+    <ul>
+      <li class="small">Click an answer choice to record and auto-advance to the next question.</li>
+      <li class="small">You can pause/resume the timer. If countdown mode is used, quiz auto-submits when time is up.</li>
+      <li class="small">All functionality is client-side; no data leaves your device unless you download results.</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+/* ------------
+Data: 100 situational HBSE items (Philippine context)
+Domains: A-E
+Each item: id, domain (A-E), question, choices[4], answer (0-3), rationale
+------------ */
+
+/* For readability and maintainability, the array is declared directly.
+   Each question is situational, tied to Philippine contexts such as barangay,
+   OFWs, Pantawid, LGUs, calamities, urban poor, neoliberal policies, kapwa, loob, etc.
+*/
+
+const QUESTIONS = [
+/* 1 */ {id:1, domain:'A', question: "A barangay captain asks a social worker to assess why many young adults in the community refuse to participate in livelihood trainings. During the home visits you find the youths spend evenings selling goods online and supporting household income. Which factor most likely explains the youths' resistance to attending scheduled daytime trainings?",
+    choices: ["A. Lack of awareness of training benefits","B. Competing economic responsibilities of household contribution","C. Poor training facilitation style","D. Cultural distrust of formal institutions"], answer:1,
+    rationale: "Their economic responsibilities (selling goods online) create a practical conflict with daytime training times—competing livelihood duties often explain low attendance."},
+
+/* 2 */ {id:2, domain:'A', question: "A DSWD worker analyzes poverty levels in two barangays using both income and food-security indicators. One barangay shows slightly higher incomes but frequent seasonal hunger. What does this discrepancy suggest about measuring poverty?",
+    choices: ["A. Income-based measures are always superior","B. Multidimensional measures better capture lived poverty","C. Food-security indicators are unreliable","D. The richer barangay has better reporting accuracy"], answer:1,
+    rationale: "Multidimensional measures (income, food security, access to services) capture different facets of poverty that income alone can miss."},
+
+/* 3 */ {id:3, domain:'A', question: "An OFW mother returns home after 10 years and reports her adolescent children are rebellious and distant. As a social worker, which internal/external interplay best explains their family dynamics?",
+    choices: ["A. Family’s internal attachment disruptions due to prolonged separation","B. External economic benefits reducing parental authority","C. External cultural assimilation of OFW kids abroad","D. Genetic predisposition to rebelliousness"], answer:0,
+    rationale: "Prolonged caregiver absence disrupts attachment and daily parenting routines—an internal family dynamic resulting from an external migration factor."},
+
+/* 4 */ {id:4, domain:'A', question: "A municipal planner argues that neoliberal policies increased investors but displaced small fishers. When preparing a social welfare response, what is a primary implication of neoliberalism to social work practice?",
+    choices: ["A. Focus solely on individual therapy","B. Understand structural causes and advocate for policy protections","C. Promote market solutions for social issues","D. Ignore macroeconomics as outside social work scope"], answer:1,
+    rationale: "Neoliberal shifts create structural vulnerabilities; social workers must analyze structural causes and engage in advocacy and policy protection."},
+
+/* 5 */ {id:5, domain:'A', question: "In assessing a community affected by mining, you note both environmental degradation and rising local unemployment after closure. Which approach best analyzes the community’s changing reality?",
+    choices: ["A. Psychodynamic analysis only","B. Ecosystems/systems perspective linking environment, economy, and social systems","C. Casework focused on affected individuals","D. Cultural anthropology alone"], answer:1,
+    rationale: "An ecosystems/systems perspective links environmental, economic, and social subsystems to explain community-level changes."},
+
+/* 6 */ {id:6, domain:'A', question: "While reviewing a poverty program, you note that cash transfers are given equally to every household regardless of household size. Which measurement or approach is most appropriate to improve equity?",
+    choices: ["A. Use a headcount index only","B. Switch to per-capita or per-equivalent household measures","C. Continue equal fixed transfers to simplify administration","D. Use aggregate municipal poverty rate only"], answer:1,
+    rationale: "Per-capita or equivalence scales adjust for household composition and better target resources equitably."},
+
+/* 7 */ {id:7, domain:'A', question: "A community leader claims that globalization created jobs for locals but worsened inequality. As a social worker conducting analysis, what's the best next step?",
+    choices: ["A. Accept the claim without evidence","B. Collect disaggregated data to examine differential impacts across social classes","C. Recommend immediate privatization of services","D. Focus only on cultural impacts"], answer:1,
+    rationale: "Gathering disaggregated data lets you test whether benefits were uneven and identify which groups lost out."},
+
+/* 8 */ {id:8, domain:'A', question: "During a stakeholder meeting about informal settlers, an NGO argues that community strengths should be the starting point for interventions. Which perspective supports this approach?",
+    choices: ["A. Deficit-oriented approach","B. Strengths/empowerment perspective","C. Pathology-based model","D. Bureaucratic-control model"], answer:1,
+    rationale: "The strengths/empowerment perspective focuses on existing community assets as the foundation for development."},
+
+/* 9 */ {id:9, domain:'A', question: "You're asked to evaluate a local feeding program's impact. Which indicator balances immediate relief and long-term welfare?",
+    choices: ["A. Number of meals served only","B. Improved child nutritional status and attendance in school","C. Amount of funds spent","D. Number of volunteers deployed"], answer:1,
+    rationale: "Combining short-term (meals) with sustained outcomes (nutrition, school attendance) shows both relief and longer-term impact."},
+
+/* 10 */ {id:10, domain:'A', question: "A social work team evaluates how internal family power dynamics and external labor migration affect children's schooling. Which tool best helps analyze both levels?",
+    choices: ["A. Individual psych test","B. Person-in-Environment (PIE) assessment","C. Pure economic model","D. Community mapping only"], answer:1,
+    rationale: "PIE explicitly links individual/family functioning with broader environmental forces including migration and economic shifts."},
+
+/* 11 */ {id:11, domain:'B', question: "A 27-year-old client raised in a tight-knit rural family reports 'hiya' and reluctance to discuss family conflicts with outsiders. Which Filipino construct best explains their hesitancy?",
+    choices: ["A. Kapwa","B. Hiya (sense of shame) rooted in social expectations","C. Loob","D. Pakikisama"], answer:1,
+    rationale: "Hiya reflects socialized shame and concern for social image, explaining reluctance to disclose conflicts to outsiders."},
+
+/* 12 */ {id:12, domain:'B', question: "A community program uses 'bayanihan' to mobilize volunteers after a typhoon. Which personality/cultural value does this illustrate?",
+    choices: ["A. Individualism","B. Kagandahang-loob (inner goodness) and bayanihan (communal help)","C. Competitive self-reliance","D. Stoic isolation"], answer:1,
+    rationale: "Bayanihan and kagandahang-loob capture Filipino communal helping values evident in cooperative disaster response."},
+
+/* 13 */ {id:13, domain:'B', question: "A social worker applies Erikson and Gilligan in counseling adolescent girls. What important cultural adaptation should be considered for Filipino clients?",
+    choices: ["A. Ignore family orientation","B. Integrate relational/interdependent values (kapwa, family) into interpretations","C. Prioritize only individual autonomy","D. Use Western stages without modification"], answer:1,
+    rationale: "Filipino relational values like kapwa influence identity and moral development, so theories should be adapted to emphasize interdependence."},
+
+/* 14 */ {id:14, domain:'B', question: "A client defers to elders in family decision-making despite career ambitions. Which personality theory helps explain this intergenerational behavior in Filipino families?",
+    choices: ["A. Behaviorism only","B. Social learning theory with cultural reinforcement of respect for elders","C. Cognitive theory alone","D. Existentialism"], answer:1,
+    rationale: "Social learning theory explains how cultural norms (respect for elders) are modeled and reinforced across generations."},
+
+/* 15 */ {id:15, domain:'B', question: "During supervision, a novice worker reports emotional exhaustion dealing with clients’ trauma. Which Filipino-centered self-care approach is most appropriate?",
+    choices: ["A. Individual isolation","B. Seeking support through close colleagues and community (pakikiramay)","C. Avoiding all client contact","D. Relying solely on medication"], answer:1,
+    rationale: "Filipino communal support (pakikiramay) and peer support are culturally consonant self-care strategies for social workers."},
+
+/* 16 */ {id:16, domain:'B', question: "A case involves a client whose 'loob' (inner self) is highly private; they prefer expressive arts therapy rather than talk therapy. Which action respects Filipino cultural value?",
+    choices: ["A. Forcing verbal disclosure","B. Offer alternative expressive modalities and build trust slowly","C. Assume lack of motivation","D. Immediately refer for psychiatric diagnosis"], answer:1,
+    rationale: "Respecting 'loob' means providing culturally acceptable modalities that allow non-verbal expression while building trust."},
+
+/* 17 */ {id:17, domain:'B', question: "A community uses religious rituals to cope after loss. As a social worker, integrating which perspective supports culturally responsive practice?",
+    choices: ["A. Ignoring spiritual coping","B. A strengths-based, culturally sensitive approach that includes spiritual resources","C. Replacing rituals with secular programs","D. Viewing rituals as irrational"], answer:1,
+    rationale: "Acknowledging spiritual coping as a strength respects cultural resources and promotes effective interventions."},
+
+/* 18 */ {id:18, domain:'B', question: "A Filipino client values group approval (pakikisama). Which groupwork technique best leverages this for behavior change?",
+    choices: ["A. Individual punishment","B. Peer modeling and group norms reinforcement","C. Public shaming","D. Strictly didactic lecture"], answer:1,
+    rationale: "Peer modeling and shaping group norms harness pakikisama and peer influence for positive change."},
+
+/* 19 */ {id:19, domain:'B', question: "A social worker interprets silence during counseling as resistance. In a Filipino context, what alternative meaning might silence have?",
+    choices: ["A. Agreement with counselor","B. Respectful reflection, humility, or avoidance of embarrassment","C. Hostility","D. Learned helplessness only"], answer:1,
+    rationale: "Silence can reflect respectful reflection or desire to avoid 'hiya'; cultural interpretation avoids mislabeling it as resistance."},
+
+/* 20 */ {id:20, domain:'B', question: "You’re designing a psychoeducation session for parents about adolescent behavior. Which strategy best aligns with Filipino family values?",
+    choices: ["A. Emphasize individualism and personal rights exclusively","B. Frame interventions around family roles, respect, and collective wellbeing","C. Use only punitive recommendations","D. Exclude elders from planning"], answer:1,
+    rationale: "Framing around family roles and collective wellbeing aligns with Filipino family-centered values and increases acceptability."},
+
+/* 21 */ {id:21, domain:'C', question: "A barangay reports a rising number of youth gangs involved in theft. Which community-level factor is most important to examine first?",
+    choices: ["A. Individual pathology of gang leaders","B. Structural factors like unemployment, school dropout rates, and lack of youth programs","C. Imported pop culture alone","D. Law enforcement style only"], answer:1,
+    rationale: "Gang involvement often stems from structural issues (unemployment, lack of opportunities); addressing these is key to prevention."},
+
+/* 22 */ {id:22, domain:'C', question: "A client with antisocial behaviors grew up in a home with inconsistent discipline and neglect. Which theoretical explanation best fits?",
+    choices: ["A. Strict genetic determinism","B. Social learning and attachment disruptions explaining learned deviant behaviors","C. Purely economic causes","D. Strictly moral failing"], answer:1,
+    rationale: "Social learning and attachment theories explain how inconsistent parenting can produce maladaptive behaviors through modeling and insecure bonds."},
+
+/* 23 */ {id:23, domain:'C', question: "A teen engaged in substance use is placed in a community-based diversion program. Which social work role is most appropriate?",
+    choices: ["A. Punitive enforcer","B. Advocate and coordinator of rehabilitation and family engagement","C. Passive observer","D. Solely medical prescriber"], answer:1,
+    rationale: "Social workers function as advocates and coordinators to link clients to services and engage family/social supports for rehabilitation."},
+
+/* 24 */ {id:24, domain:'C', question: "A jail-based program uses group therapy to address violent behaviors. Which theoretical approach best supports group interventions here?",
+    choices: ["A. Cognitive-behavioral and social learning approaches focusing on skill-building","B. Pure psychoanalytic interpretation","C. Biomedical only","D. Organizational theory"], answer:0,
+    rationale: "CBT and social learning target behaviors, cognitions, and skills—useful in correctional groupwork for reducing violence."},
+
+/* 25 */ {id:25, domain:'C', question: "When classifying deviant acts for program planning, why is considering cultural context essential in the Philippines?",
+    choices: ["A. Culture has no impact on deviance","B. Cultural norms shape what’s defined as deviant and accepted community responses","C. Cultural context only matters in rural areas","D. Legal codes override cultural considerations always"], answer:1,
+    rationale: "Cultural norms influence definitions of deviance and appropriate social responses; programs must be culturally informed."},
+
+/* 26 */ {id:26, domain:'C', question: "A street youth exhibits conduct problems yet shows remorse when a teacher intervenes. Which intervention is appropriate?",
+    choices: ["A. Immediate institutionalization","B. Strengths-based mentoring and restorative practices linking youth to education","C. Criminalization only","D. Ignore emotional cues"], answer:1,
+    rationale: "Restorative, mentoring-based interventions leverage the youth's responsiveness and foster rehabilitation rather than punitive measures."},
+
+/* 27 */ {id:27, domain:'C', question: "A client with an emotional disorder is stigmatized in a barangay. Which social work action addresses stigma effectively?",
+    choices: ["A. Isolation of client from community","B. Community education and engagement to normalize help-seeking","C. Public labeling","D. Deny the existence of the disorder"], answer:1,
+    rationale: "Community education reduces stigma and fosters supportive environments that encourage help-seeking."},
+
+/* 28 */ {id:28, domain:'C', question: "You must design an intervention for gender-based violence survivors in a conservative town. Which approach balances safety and social acceptability?",
+    choices: ["A. Public awareness campaigns only","B. Confidential services, survivor-centered trauma care, and discreet community outreach","C. Forcing immediate public trials","D. Ignoring local norms entirely"], answer:1,
+    rationale: "Survivor-centered, confidential services protect safety while culturally-sensitive outreach increases access in conservative contexts."},
+
+/* 29 */ {id:29, domain:'C', question: "A client with conduct disorder is placed in a family therapy program. Which family factor would you prioritize?",
+    choices: ["A. Parent-child attachment, family communication, and discipline patterns","B. Extended relatives' politics","C. Family income only","D. Child’s academic grades only"], answer:0,
+    rationale: "Attachment, communication, and discipline are central to conduct issues and are modifiable targets in family therapy."},
+
+/* 30 */ {id:30, domain:'C', question: "A barangay implements curfew fines for delinquent youth. As a social worker, what evaluation question is most critical?",
+    choices: ["A. Are fines generating revenue?","B. Do fines reduce reoffending, and are they equitable and restorative?","C. Are fines popular on social media?","D. Can fines be increased?"], answer:1,
+    rationale: "Effectiveness (reoffending) and fairness/restoration should be assessed to determine if curfew fines achieve intended social goals."},
+
+/* 31 */ {id:31, domain:'D', question: "A Filipino family with an OFW parent struggles with decision-making. Which family assessment tool element is most informative?",
+    choices: ["A. Family genogram showing roles, communication patters, and migration histories","B. Single economic indicator","C. Academic test scores of children","D. Community festival participation only"], answer:0,
+    rationale: "Genograms reveal family structure, role distribution, and migration's impact—essential for understanding family dynamics with OFWs."},
+
+/* 32 */ {id:32, domain:'D', question: "In a groupwork setting with adolescent mothers, which group role would a social worker prioritize to encourage peer support?",
+    choices: ["A. Director (commanding) stance","B. Facilitator fostering mutual aid and peer leadership","C. Passive observer","D. Authoritarian enforcer"], answer:1,
+    rationale: "Facilitator role promotes mutual aid, empowerment, and peer leadership—central to effective groupwork with vulnerable adolescents."},
+
+/* 33 */ {id:33, domain:'D', question: "A community organization seeks help designing an organizational structure that allows participation. Which model fits best?",
+    choices: ["A. Highly centralized top-down model","B. Participatory, flattening structure that enables community leadership","C. A rigid bureaucratic structure","D. Sole reliance on external consultants"], answer:1,
+    rationale: "Participatory structures encourage local ownership and sustainable community governance capacity."},
+
+/* 34 */ {id:34, domain:'D', question: "A social worker uses systems theory to plan interventions in a family affected by addiction. Which action reflects systems thinking?",
+    choices: ["A. Treat the addicted individual in isolation","B. Engage family members, community resources, and service networks in coordinated intervention","C. Focus only on incarceration","D. Ignore spouse and children"], answer:1,
+    rationale: "Systems thinking recognizes interdependence; interventions engage family and broader support networks rather than isolate the individual."},
+
+/* 35 */ {id:35, domain:'D', question: "During community diagnosis you find multiple people’s organizations (POs) doing similar livelihood projects separately. What organizational strategy is most effective?",
+    choices: ["A. Force merge without consultation","B. Facilitate network-building and coordinated resource-sharing among POs","C. Disband smaller groups","D. Let competition continue unchecked"], answer:1,
+    rationale: "Networking and coordination reduce duplication, enhance economies of scale, and strengthen collective advocacy."},
+
+/* 36 */ {id:36, domain:'D', question: "A child protection team requests a family conference. Which documentation practice ensures ethical and accurate records?",
+    choices: ["A. Use hearsay without verification","B. Record factual observations, dates, consent, and culturally sensitive language","C. Record judgmental language","D. Keep no records to protect privacy"], answer:1,
+    rationale: "Accurate, factual, and culturally respectful documentation preserves client dignity and meets ethical standards."},
+
+/* 37 */ {id:37, domain:'D', question: "A program aims to strengthen community resilience against typhoons. Which community-level intervention best builds long-term capacity?",
+    choices: ["A. Single relief distribution","B. Community-based disaster preparedness training, local early warning systems, and infrastructure planning","C. Media-only campaigns","D. Ignore community input"], answer:1,
+    rationale: "Capacity-building (training, local systems) promotes resilience beyond one-off relief distributions."},
+
+/* 38 */ {id:38, domain:'D', question: "A social worker must choose between individual-focused and group-focused assessment for a neighborhood support program. When is group-focused assessment preferred?",
+    choices: ["A. Problems are isolated to one family","B. Problems involve collective issues like neighborhood safety or common access to resources","C. Only medical conditions are present","D. There is no community cohesion"], answer:1,
+    rationale: "Group-focused assessment suits collective problems affecting community functioning and resource distribution."},
+
+/* 39 */ {id:39, domain:'D', question: "A social organization needs improved governance. Which training area most strengthens organizational functioning?",
+    choices: ["A. Celebrity endorsements","B. Leadership, participatory planning, financial management, and record-keeping skills","C. Sporadic fundraising events only","D. Outsourcing all decisions"], answer:1,
+    rationale: "Governance improves with leadership development, financial systems, and transparent record-keeping—core operational capacities."},
+
+/* 40 */ {id:40, domain:'D', question: "A group presents chronic absenteeism among members. Which groupwork tool helps diagnose group functioning issues?",
+    choices: ["A. Individual IQ tests","B. Group process observation and session recordings","C. Random surveys only","D. Ignoring the issue"], answer:1,
+    rationale: "Observing group processes and recordings reveal dynamics (engagement, leadership) that explain absenteeism."},
+
+/* 41 */ {id:41, domain:'E', question: "A municipal planner asks: which development approach emphasizes people’s participation and local resource mobilization rather than top-down service provision?",
+    choices: ["A. Top-down social engineering","B. Locality development/participatory approach","C. Pure neoliberal privatization","D. Military-led development"], answer:1,
+    rationale: "Locality development emphasizes participation and mobilizing local assets over externally imposed solutions."},
+
+/* 42 */ {id:42, domain:'E', question: "A social worker must analyze a social movement that mobilized fisherfolk to protect coastal rights. Which outcome indicates successful social movement impact?",
+    choices: ["A. Temporary media attention only","B. Policy change, greater community agency, and improved resource protection","C. Short-lived protests without follow-up","D. Personal fame of leaders only"], answer:1,
+    rationale: "Sustained policy change, empowerment, and resource protection are indicators of meaningful movement impact."},
+
+/* 43 */ {id:43, domain:'E', question: "A community project uses participatory rural appraisal (PRA). Which aspect is essential to PRA’s legitimacy?",
+    choices: ["A. Expert-only decision making","B. Community-driven data collection and reflection","C. Exclusive use of external consultants","D. Quantitative data only"], answer:1,
+    rationale: "PRA relies on community-led mapping, ranking, and reflection to ensure ownership and accurate local knowledge."},
+
+/* 44 */ {id:44, domain:'E', question: "An NGO debates whether to prioritize rapid economic growth or social equity. Which development lens prioritizes reducing inequality and human rights?",
+    choices: ["A. Growth-first neoliberal lens","B. Rights-based and social development lens","C. Market-only approach","D. Austerity-focused approach"], answer:1,
+    rationale: "Rights-based and social development frameworks focus on equity, inclusion, and human rights over growth alone."},
+
+/* 45 */ {id:45, domain:'E', question: "A community-based microfinance project increases women’s incomes but men report loss of decision-making. Which strategy should social workers incorporate?",
+    choices: ["A. Withdraw support","B. Gender-sensitive programming that engages men and addresses household power dynamics","C. Replace women leaders with men","D. Ignore gender issues"], answer:1,
+    rationale: "Gender-sensitive interventions include men to address household power relations and prevent backlash while supporting women’s empowerment."},
+
+/* 46 */ {id:46, domain:'E', question: "When analyzing development trends, why is it important to include intersectional lenses (class, gender, ethnicity)?",
+    choices: ["A. Intersectionality complicates data unnecessarily","B. It reveals how policies differentially affect groups across multiple axes of inequality","C. Only class matters","D. Policies affect everyone equally"], answer:1,
+    rationale: "Intersectional analysis uncovers varied impacts and ensures policies are inclusive and equitable across groups."},
+
+/* 47 */ {id:47, domain:'E', question: "A village organizes mass action to demand irrigation rehabilitation. What is a realistic social work role in supporting this movement?",
+    choices: ["A. Lead aggressive confrontation","B. Facilitate community organizing, capacity building, and linkages to LGU and funding","C. Discourage all civic action","D. Take over leadership permanently"], answer:1,
+    rationale: "Social workers can support organizing, capacity-building and networking while allowing communities to lead their advocacy."},
+
+/* 48 */ {id:48, domain:'E', question: "A policy shift reduces subsidies for smallholder farmers. Which immediate social development consequence should be monitored?",
+    choices: ["A. Improved farm productivity immediately","B. Increased vulnerability, potential migration, and food insecurity among smallholders","C. Immediate corporate investment only","D. Irrelevant to social work"], answer:1,
+    rationale: "Removing subsidies can heighten vulnerability and drive migration or food insecurity, which social development monitoring must capture."},
+
+/* 49 */ {id:49, domain:'E', question: "A development project promises jobs but threatens displacement. What evaluation question is most important ethically?",
+    choices: ["A. How soon can construction begin?","B. What are the compensation, resettlement, and livelihood plans for affected communities?","C. Can the developer publicize the project?","D. How to minimize community participation?" ], answer:1,
+    rationale: "Ethical evaluation prioritizes fair compensation, resettlement, and livelihood restoration for displaced populations."},
+
+/* 50 */ {id:50, domain:'E', question: "A local government conducts consultations only after project approval. As a social worker consultant, what critique would you raise?",
+    choices: ["A. Post-approval consultations are adequate","B. Consultations should be participatory early in planning to ensure community voice and consent","C. Only technical experts should decide","D. Speed is more important than community input"], answer:1,
+    rationale: "Early, participatory consultations ensure projects reflect community needs and uphold principles of accountability and consent."},
+
+/* 51 */ {id:51, domain:'A', question: "A coastal barangay is seeing youth out-migration and aging population. For a social reality analysis, which demographic trend should be prioritized?",
+    choices: ["A. Only current employment stats","B. Age-sex distribution, migration patterns, and dependency ratios","C. Number of barangay landmarks","D. Historical folklore"], answer:1,
+    rationale: "Age-sex distribution and migration patterns show labor availability and dependency burdens—key for planning services."},
+
+/* 52 */ {id:52, domain:'A', question: "You're reviewing a poverty reduction program that uses a purely market-based approach. What potential social work concern should you raise?",
+    choices: ["A. Markets solve all problems","B. Market solutions may exclude vulnerable groups without protections","C. Marketization always reduces inequality","D. No need for social protection"], answer:1,
+    rationale: "Market-based strategies can widen inequities without targeted protections for vulnerable populations, a key social work concern."},
+
+/* 53 */ {id:53, domain:'A', question: "A municipality's urban development plan displaces informal vendors. Which cross-level analysis would a social worker perform?",
+    choices: ["A. Micro-level only (individual vendor behavior)","B. Analyze policies, economic drivers, and household impacts on livelihoods","C. Ignore policy and focus on culture","D. Only count number of vendors"], answer:1,
+    rationale: "A cross-level analysis links policy decisions to economic drivers and household-level livelihood impacts for comprehensive answers."},
+
+/* 54 */ {id:54, domain:'A', question: "While analyzing social realities you find strong informal mutual-aid networks. Which program design principle should you apply?",
+    choices: ["A. Replace informal networks with formal services","B. Build on and strengthen existing mutual-aid networks","C. Discourage community reciprocity","D. Ignore them"], answer:1,
+    rationale: "Programs that reinforce existing social capital are more sustainable and culturally appropriate."},
+
+/* 55 */ {id:55, domain:'A', question: "A rural town’s youth show high entrepreneurial energy but lack formal finance. What policy-level recommendation aligns with social development?",
+    choices: ["A. No intervention","B. Microcredit schemes with training and safeguards for youth entrepreneurs","C. Only large corporate investments","D. Criminal penalties for informal enterprises"], answer:1,
+    rationale: "Youth-friendly microfinance combined with capacity-building helps harness entrepreneurial potential while reducing risk."},
+
+/* 56 */ {id:56, domain:'B', question: "In individual counseling, a client expresses that 'kapwa' motivates them to join community volunteering. Which motivational cluster does this reflect?",
+    choices: ["A. Self-enhancement","B. Relational/interdependent motivation tied to collective identity","C. Random altruism","D. Financial incentive only"], answer:1,
+    rationale: "Kapwa is a relational motive emphasizing collective identity and shared humanity—powerful for volunteer mobilization."},
+
+/* 57 */ {id:57, domain:'B', question: "A student shows academic decline after a family dispute. Which developmental factor should you explore?",
+    choices: ["A. Peer group only","B. Emotional regulation, family stressors, and support networks","C. Weather patterns","D. Local cuisine preferences"], answer:1,
+    rationale: "Family stress impacts emotional regulation and academic functioning; exploring supports can guide intervention."},
+
+/* 58 */ {id:58, domain:'B', question: "A social worker uses Maslow and notes many clients struggle with safety needs. What adaptation should be prioritized in intervention planning?",
+    choices: ["A. Focus only on self-actualization","B. Secure basic needs (shelter, food, safety) before higher-order interventions","C. Skip safety planning","D. Assume needs are met"], answer:1,
+    rationale: "Maslow-based adaptations require meeting safety and physiological needs first to enable higher-level growth."},
+
+/* 59 */ {id:59, domain:'B', question: "You notice a client’s moral reasoning reflects relational concern over abstract principles. Which theorist’s perspective aligns with this observation?",
+    choices: ["A. Kohlberg exclusively","B. Gilligan’s ethic of care emphasizing relationships","C. Behaviorism","D. Freudian psychosexual stages"], answer:1,
+    rationale: "Gilligan highlights relational ethics and care as moral reasoning styles, often relevant to Filipino social contexts."},
+
+/* 60 */ {id:60, domain:'B', question: "A community training wants to include traditional healing in mental health promotion. Which ethical practice should guide this inclusion?",
+    choices: ["A. Disallow traditional practices","B. Respect culturally-significant healing while ensuring safety and evidence-informed care","C. Replace traditional healing entirely","D. Ignore client consent"], answer:1,
+    rationale: "Integrating traditional practices respectfully while safeguarding client well-being aligns with ethical, culturally sensitive practice."},
+
+/* 61 */ {id:61, domain:'C', question: "A barangay attempts to criminalize loitering. Which social work perspective should the council consider before drafting the ordinance?",
+    choices: ["A. Criminalization is always effective","B. Causes of loitering (unemployment, lack of youth spaces) and alternatives like engagement programs","C. Only punishment deters youth","D. Ignore root causes"], answer:1,
+    rationale: "Addressing structural causes and offering supportive alternatives is more humane and effective than blanket criminalization."},
+
+/* 62 */ {id:62, domain:'C', question: "You must evaluate a rehabilitation program for substance users. Which process measure indicates quality of rehabilitation?",
+    choices: ["A. Length of detention only","B. Access to counseling, continuity of care, family involvement, and relapse monitoring","C. Number of arrests","D. Size of facility only"], answer:1,
+    rationale: "Quality rehab involves counseling access, continuity, family support, and follow-up rather than mere confinement metrics."},
+
+/* 63 */ {id:63, domain:'C', question: "A client with conduct issues benefits from cognitive-behavioral group sessions. What measurable change would indicate success?",
+    choices: ["A. Only attendance improvement","B. Reduced aggressive incidents and improved social problem-solving skills","C. Increased talkativeness only","D. Group size only"], answer:1,
+    rationale: "Behavioral indicators (fewer incidents) and skill development show CBT group's practical effectiveness."},
+
+/* 64 */ {id:64, domain:'C', question: "A social worker working with juvenile offenders uses restorative justice. What is a key advantage of this approach?",
+    choices: ["A. It focuses solely on punishment","B. It emphasizes accountability, repair, and reintegration with community","C. It ignores victims","D. It increases recidivism intentionally"], answer:1,
+    rationale: "Restorative justice centers victim-offender dialogue, reparations, and community reintegration, reducing harm and recidivism."},
+
+/* 65 */ {id:65, domain:'C', question: "In categorizing deviant acts you find moral panic in local media. As a social worker, how should you respond?",
+    choices: ["A. Amplify sensational stories","B. Provide balanced information, community education, and evidence-based context","C. Ignore media influence","D. Recommend censorship"], answer:1,
+    rationale: "Countering moral panic requires evidence-based education and calming misinformation to protect vulnerable groups."},
+
+/* 66 */ {id:66, domain:'D', question: "A family assessment finds grandparents are primary caregivers while parents work overseas. Which service is most appropriate?",
+    choices: ["A. Ignore grandparents","B. Support caregiver training, respite, and resource linkage for grandparent-headed households","C. Remove children from home","D. Assume grandparents cope well without support"], answer:1,
+    rationale: "Grandparent caregivers need support, training, and resources to ensure child welfare and reduce caregiver strain."},
+
+/* 67 */ {id:67, domain:'D', question: "A neighborhood group wants to plan a livelihood fair. Which extra-group activity will most increase community participation?",
+    choices: ["A. Elite-only events","B. Inclusive scheduling, accessible venues, and promotion through local leaders and POs","C. High-cost entrance fees","D. Short notice"], answer:1,
+    rationale: "Inclusive logistics and local promotion ensure broad access and participation in community events."},
+
+/* 68 */ {id:68, domain:'D', question: "During group facilitation a member monopolizes conversation. What facilitative skill should the worker deploy?",
+    choices: ["A. Publicly scold the member","B. Use active facilitation: redirect, set time limits, and invite quieter members to speak","C. Let monopolization continue","D. Cancel the session"], answer:1,
+    rationale: "Active facilitation balances participation by redirecting and inviting diverse voices while maintaining group safety."},
+
+/* 69 */ {id:69, domain:'D', question: "A social organization training includes governance manuals. Which key policy should be prioritized for transparency?",
+    choices: ["A. Secret financial practices","B. Clear accounting, procurement, and conflict-of-interest policies","C. No records","D. Unpublished decisions"], answer:1,
+    rationale: "Transparent financial and procurement policies prevent misuse and build stakeholder trust in organizations."},
+
+/* 70 */ {id:70, domain:'D', question: "A community-based program needs to evaluate impact. Which mixed-method measure combines depth and breadth?",
+    choices: ["A. Only interviews","B. Quantitative indicators (service numbers) plus qualitative case studies and focus groups","C. Eye-catching brochures only","D. Only national statistics"], answer:1,
+    rationale: "Mixed methods provide numerical trends and contextual depth for comprehensive program evaluation."},
+
+/* 71 */ {id:71, domain:'E', question: "A group of farmers organizes to demand land titling. Which advocacy tactic balances effectiveness and safety?",
+    choices: ["A. Violent confrontation","B. Strategic petitions, documented cases, and coalition-building with NGOs and LGU allies","C. Silent isolation","D. Bribery"], answer:1,
+    rationale: "Coalition-building and documented demands are effective advocacy tactics that reduce risk and increase legitimacy."},
+
+/* 72 */ {id:72, domain:'E', question: "A social worker assesses a development project for sustainability. Which indicator best signals local ownership?",
+    choices: ["A. External donor funds only","B. Active local decision-making, community contributions, and local capacity to manage the project","C. Short-term celebrity endorsement","D. Project existence only"], answer:1,
+    rationale: "Local decision-making and capacity indicate true ownership, crucial for sustainability after external funds end."},
+
+/* 73 */ {id:73, domain:'E', question: "A national policy promotes cash-for-work programs during calamities. Which development lens should guide program design?",
+    choices: ["A. One-size-fits-all approach","B. Gender-sensitive, context-specific design that safeguards vulnerable groups","C. Political patronage focus","D. Lack of monitoring"], answer:1,
+    rationale: "Contextual, gender-sensitive design ensures equitable access and avoids unintended harms during cash-for-work programs."},
+
+/* 74 */ {id:74, domain:'E', question: "You’re analyzing how neoliberal globalization affects informal vendors. Which research question reflects a critical development perspective?",
+    choices: ["A. How to market vendors as luxury brands?","B. How do trade liberalization and urban redevelopment displace vendors and what protections exist?","C. How to eliminate vendors?","D. How to make vendors invisible?"], answer:1,
+    rationale: "A critical lens examines structural drivers (trade, redevelopment) and protective policy gaps affecting informal workers."},
+
+/* 75 */ {id:75, domain:'E', question: "Which approach to development explicitly places civic participation, human rights, and equity at its core?",
+    choices: ["A. Market fundamentalism","B. Rights-based development","C. Austerity-only policies","D. Unregulated privatization"], answer:1,
+    rationale: "Rights-based development foregrounds participation, accountability, and equitable access to services and resources."},
+
+/* 76 */ {id:76, domain:'A', question: "A health worker notes malnutrition among children despite food aid deliveries. What social-environmental factor might explain persistent malnutrition?",
+    choices: ["A. Solely food quantity","B. Poor sanitation, maternal education, and health service access affecting nutrition absorption","C. Random bad luck","D. Festivals"], answer:1,
+    rationale: "Sanitation and maternal care affect nutrition outcomes; food aid alone may not resolve underlying health determinants."},
+
+/* 77 */ {id:77, domain:'A', question: "You're mapping vulnerabilities and find households headed by women have higher poverty. Which policy remedy should be prioritized?",
+    choices: ["A. No targeted measures","B. Gender-responsive social protection and livelihood programs for women-headed households","C. Restrict women’s work","D. Increase taxes only"], answer:1,
+    rationale: "Gender-responsive social protection addresses structural disadvantages faced by women-headed households."},
+
+/* 78 */ {id:78, domain:'B', question: "A client believes manifesting success is culturally inappropriate and prefers humility. How should a social worker adapt motivational interviewing?",
+    choices: ["A. Push assertive self-promotion","B. Use culturally sensitive goals framed as collective or family benefits","C. Reject client's values","D. Force a Western motivational script"], answer:1,
+    rationale: "Framing goals around family or community benefits aligns motivation with Filipino humility and relational values."},
+
+/* 79 */ {id:79, domain:'B', question: "A social worker notices clients express high value for 'utang na loob' (debt of gratitude) to an NGO. What ethical issue could arise?",
+    choices: ["A. No issue","B. Potential undue influence on voluntariness and consent when services create relational obligations","C. Only legal issues","D. Only financial issues"], answer:1,
+    rationale: "When services create perceived obligations, consent may be compromised; ethical practice requires mitigating undue influence."},
+
+/* 80 */ {id:80, domain:'B', question: "A counselor works with a client who prefers indirect communication. What technique facilitates effective rapport?",
+    choices: ["A. Direct confrontation","B. Use indirect questioning, storytelling, and safe pacing","C. Rapid deep probing","D. Public interrogation"], answer:1,
+    rationale: "Indirect approaches match client communication styles, build rapport, and reduce 'hiya' or embarrassment."},
+
+/* 81 */ {id:81, domain:'C', question: "An adolescent returns to community after juvenile diversion program. Which post-program support reduces relapse risk?",
+    choices: ["A. No follow-up","B. Family reintegration support, school or livelihood placement, and mentorship","C. Immediate isolation","D. Only punitive measures"], answer:1,
+    rationale: "Reintegration supports (family, education, livelihood) help maintain gains and reduce return to delinquency."},
+
+/* 82 */ {id:82, domain:'C', question: "A barangay initiates a campaign that labels a group as criminals based on media claims. What is the social worker’s ethical response?",
+    choices: ["A. Support the campaign","B. Advocate for due process, evidence review, and protect rights of accused individuals","C. Ignore rights concerns","D. Encourage vigilantism"], answer:1,
+    rationale: "Ethical practice defends due process and human rights, countering stigmatization without evidence."},
+
+/* 83 */ {id:83, domain:'D', question: "In group session planning, which element ensures sessions are culturally safe for indigenous participants?",
+    choices: ["A. Apply generic templates","B. Consult indigenous leaders, use culturally-relevant activities, and respect protocols","C. Use only urban examples","D. Exclude elders"], answer:1,
+    rationale: "Cultural safety requires meaningful consultation, relevant activities, and adherence to community protocols."},
+
+/* 84 */ {id:84, domain:'D', question: "A community organizer helps form a savings group. Which early activity increases group cohesion?",
+    choices: ["A. Immediate high-stakes loans","B. Shared goal-setting, transparent rules, and small initial savings activities","C. Secretive bookkeeping","D. Mandatory fines"], answer:1,
+    rationale: "Small shared successes and clear rules promote trust and cohesive financial practices in new groups."},
+
+/* 85 */ {id:85, domain:'D', question: "A group evaluation shows low participation from women. Which barrier should be examined first?",
+    choices: ["A. Women’s lack of interest","B. Time constraints due to caregiving, safety, and cultural barriers to participation","C. Men’s preferences only","D. Financial misreporting"], answer:1,
+    rationale: "Gendered time burdens and safety/cultural norms commonly limit women's participation; these must be addressed."},
+
+/* 86 */ {id:86, domain:'E', question: "A social development plan emphasizes climate adaptation. Which participatory element strengthens its legitimacy?",
+    choices: ["A. Technical solutions only","B. Community hazard mapping and locally-defined adaptation priorities","C. External contractor-only planning","D. Ignoring indigenous knowledge"], answer:1,
+    rationale: "Participatory hazard mapping and local priorities integrate local knowledge and increase plan acceptance and effectiveness."},
+
+/* 87 */ {id:87, domain:'E', question: "A grassroots coalition successfully lobbies for municipal budget allocations for youth programs. What long-term benefit indicates policy institutionalization?",
+    choices: ["A. One-off budget line that disappears next year","B. Multi-year budget commitments, program monitoring, and local capacity to implement","C. Only press statements","D. Token consultative meetings"], answer:1,
+    rationale: "Sustained budgeting, monitoring, and implementation capacity show institutionalization beyond temporary wins."},
+
+/* 88 */ {id:88, domain:'A', question: "A community's social welfare helpers report burnout. Which systemic factor likely contributes?",
+    choices: ["A. Adequate staffing and clear mandates","B. High caseloads, weak supervision, and inadequate resources","C. Excellent compensation","D. Strong community support only"], answer:1,
+    rationale: "High caseloads, poor supervision, and resource shortages are common systemic causes of worker burnout."},
+
+/* 89 */ {id:89, domain:'B', question: "A client credits their resilience to strong 'kapwa' networks. Which intervention strengthens resilience?",
+    choices: ["A. Focus solely on medication","B. Support and expand social networks and peer support mechanisms","C. Encourage isolation","D. Remove community ties"], answer:1,
+    rationale: "Bolstering social networks builds social capital and collective resilience, consistent with client-reported strengths."},
+
+/* 90 */ {id:90, domain:'C', question: "A youth program uses peer educators to reduce risky sexual behavior. Which training content is essential?",
+    choices: ["A. Only moralizing messages","B. Communication skills, accurate reproductive health info, confidentiality, and referral pathways","C. Exclusion of supervisors","D. Only punitive messaging"], answer:1,
+    rationale: "Peer educators need accurate info, communication skills, confidentiality norms, and referral links to be effective."},
+
+/* 91 */ {id:91, domain:'D', question: "A barangay wants to institutionalize a volunteer-run disaster response team. Which organizational policy is essential?",
+    choices: ["A. No training required","B. Clear role descriptions, training schedules, safety protocols, and coordination with LGU","C. Random volunteer selection","D. No supervision"], answer:1,
+    rationale: "Defined roles, training, safety, and LGU coordination ensure operational readiness and sustainability."},
+
+/* 92 */ {id:92, domain:'E', question: "A regional development plan aims to reduce rural poverty through infrastructure investment. Which complementary measure prevents displacement harm?",
+    choices: ["A. Proceed without safeguards","B. Inclusive consultation, resettlement plans, and livelihood support for those affected","C. Ignore social impacts","D. Force relocation"], answer:1,
+    rationale: "Infrastructure must be paired with safeguards, consultation, and livelihood support to prevent adverse social impacts."},
+
+/* 93 */ {id:93, domain:'A', question: "A barangay health worker notes high adolescent pregnancy in specific sitios. Which targeted analysis helps tailor interventions?",
+    choices: ["A. Aggregate municipal averages","B. Disaggregated site-level data on schooling, contraception access, and cultural norms","C. National-level trends only","D. Anecdotes only"], answer:1,
+    rationale: "Fine-grained, site-level data identifies local drivers for tailored, effective interventions."},
+
+/* 94 */ {id:94, domain:'B', question: "A social worker supports a client using storytelling as therapy aligned with Filipino oral traditions. Which benefit is most likely?",
+    choices: ["A. Storytelling is ineffective","B. Facilitation of meaning-making, identity affirmation, and community connection","C. Openly forcing disclosure","D. Replacing clinical methods entirely"], answer:1,
+    rationale: "Storytelling aids meaning-making, preserves cultural identity, and builds relational healing in Filipino contexts."},
+
+/* 95 */ {id:95, domain:'C', question: "You are designing an early-intervention program for children showing disruptive behaviors. Which prevention level is this?",
+    choices: ["A. Tertiary prevention only","B. Secondary prevention targeting identified at-risk children","C. Primary prevention for entire population only","D. No prevention needed"], answer:1,
+    rationale: "Secondary prevention targets those at risk early to prevent escalation to more serious problems."},
+
+/* 96 */ {id:96, domain:'D', question: "A community education session uses participatory theatre to discuss domestic violence. Which learning outcome is most consistent with this method?",
+    choices: ["A. Increased stigmatization","B. Enhanced empathy, dialogue, and reflection on alternative non-violent behaviors","C. Only theoretical knowledge without engagement","D. Immediate legal prosecution"], answer:1,
+    rationale: "Participatory theatre engages emotions and perspective-taking, fostering empathy and opening dialogue for change."},
+
+/* 97 */ {id:97, domain:'E', question: "A rural electrification program promises development but raises tariff concerns for poor households. Which social policy should be recommended?",
+    choices: ["A. Uniform tariff increases","B. Lifeline tariffs or subsidies to protect low-income households","C. Ignore affordability","D. Cut off poor households"], answer:1,
+    rationale: "Lifeline tariffs or targeted subsidies ensure basic service affordability while expanding access."},
+
+/* 98 */ {id:98, domain:'A', question: "During a baseline survey you notice many households underreport income due to informal economy activities. Which survey strategy reduces underreporting?",
+    choices: ["A. Single direct income question only","B. Use expenditure, asset questions, and triangulation with local informants","C. Rely on tax records only","D. Assume underreporting is negligible"], answer:1,
+    rationale: "Expenditure and asset measures and local triangulation capture informal incomes more reliably than direct income questions."},
+
+/* 99 */ {id:99, domain:'B', question: "A trainee social worker shows discomfort confronting elders in home visits. Which supervisory strategy best builds cultural competence?",
+    choices: ["A. Criticize publicly","B. Role-play, reflective supervision, and guided practice respecting cultural norms of deference","C. Avoid further home visits","D. Force confrontation"], answer:1,
+    rationale: "Reflective supervision with role-play helps trainees practice respectful approaches that fit cultural norms while building skills."},
+
+/*100 */ {id:100, domain:'E', question: "A local anti-poverty program integrates livelihood, health, and education. For integrated development, which monitoring approach is best?",
+    choices: ["A. Single-sector reporting only","B. Integrated indicators across sectors, joint monitoring, and community feedback loops","C. External audits only","D. Ignore cross-sector effects"], answer:1,
+    rationale: "Integrated monitoring tracks outcomes across sectors and uses community feedback to ensure coherent program impact."}
+];
+
+
+// Utility: map domain code to label for UI
+const DOMAIN_LABELS = {
+  'A': 'Philippine Social Realities & Social Work',
+  'B': 'Filipino Personality & Social Work',
+  'C': 'Social Work & Social Deviation',
+  'D': 'Social Environment (Family/Group/Community/Org)',
+  'E': 'Social Change & Development Perspectives'
+};
+
+// App state
+let pool = []; // active questions after filtering
+let currentSet = []; // selected and shuffled q objects
+let userAnswers = {}; // id -> {choice, timeAtAnswer (s)}
+let currentIndex = 0;
+let totalToTake = 50;
+let timerMode = 'elapsed'; // none | elapsed | countdown
+let timerInterval = null;
+let startTime = null;
+let paused = false;
+let elapsedSeconds = 0;
+let countdownSeconds = 0;
+
+// DOM refs
+const startBtn = document.getElementById('startBtn');
+const numItemsEl = document.getElementById('numItems');
+const domainFilterEl = document.getElementById('domainFilter');
+const timerModeEl = document.getElementById('timerMode');
+const countdownInput = document.getElementById('countdownInput');
+const countdownMins = document.getElementById('countdownMins');
+
+const quizCard = document.getElementById('quizCard');
+const qText = document.getElementById('qText');
+const choicesEl = document.getElementById('choices');
+const qDomainText = document.getElementById('qDomainText');
+const domainBadge = document.getElementById('domainBadge');
+
+const currentIndexEl = document.getElementById('currentIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const answeredCountEl = document.getElementById('answeredCount');
+const remainingCountEl = document.getElementById('remainingCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const pauseBtn = document.getElementById('pauseBtn');
+const quitBtn = document.getElementById('quitBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+const resultCard = document.getElementById('resultCard');
+const overallScoreEl = document.getElementById('overallScore');
+const overallTotalEl = document.getElementById('overallTotal');
+const timeSpentEl = document.getElementById('timeSpent');
+const domainBreakdownEl = document.getElementById('domainBreakdown');
+const reviewListEl = document.getElementById('reviewList');
+const summaryGridEl = document.getElementById('summaryGrid');
+const restartBtn = document.getElementById('restartBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+// Helpers
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+  return array;
+}
+
+function formatTime(s){
+  const h = Math.floor(s/3600); s%=3600;
+  const m = Math.floor(s/60); const sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function loadPool(){
+  const domain = domainFilterEl.value;
+  pool = (domain === 'ALL') ? [...QUESTIONS] : QUESTIONS.filter(q=>q.domain===domain);
+}
+
+// Start quiz
+startBtn.addEventListener('click', ()=>{
+  loadPool();
+  const selected = numItemsEl.value;
+  if(selected === 'All') totalToTake = pool.length;
+  else totalToTake = parseInt(selected,10);
+  if(totalToTake > pool.length){
+    alert(`Only ${pool.length} questions available for selected domain. Using ${pool.length} instead.`);
+    totalToTake = pool.length;
+  }
+  // Timer mode
+  timerMode = timerModeEl.value;
+  if(timerMode === 'countdown'){
+    countdownSeconds = Math.max(60, parseInt(countdownMins.value,10) * 60);
+  }
+  initQuiz();
+});
+
+timerModeEl.addEventListener('change', ()=>{
+  if(timerModeEl.value === 'countdown') countdownInput.style.display = 'inline-block';
+  else countdownInput.style.display = 'none';
+});
+
+// Initialize quiz variables and UI
+function initQuiz(){
+  // reset
+  userAnswers = {};
+  currentIndex = 0;
+  elapsedSeconds = 0;
+  paused = false;
+  startTime = Date.now();
+  // prepare set
+  currentSet = shuffle(pool.slice()); // shuffle pool
+  currentSet = currentSet.slice(0,totalToTake);
+  // shuffle choices for each question (we need to keep track of correct index)
+  currentSet = currentSet.map(q=>{
+    // copy
+    const choices = q.choices.map((c,i)=>({c,i}));
+    shuffle(choices);
+    const newIndex = choices.findIndex(x=>x.i===q.answer);
+    return {
+      ...q,
+      _shuffledChoices: choices.map(x=>x.c),
+      _shuffledAnswerIndex: newIndex
+    };
+  });
+  // UI
+  document.getElementById('totalIndex').textContent = currentSet.length;
+  domainBadge.textContent = (domainFilterEl.value==='ALL') ? 'ALL DOMAINS' : DOMAIN_LABELS[domainFilterEl.value];
+  domainBadge.title = domainBadge.textContent;
+  document.getElementById('setupCard').classList?.add('hide');
+  quizCard.classList.remove('hide');
+  resultCard.classList.add('hide');
+  showQuestion(0);
+  // timer
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerMode === 'elapsed'){
+    timerDisplay.textContent = formatTime(0);
+    timerInterval = setInterval(()=>{
+      if(!paused){ elapsedSeconds++; timerDisplay.textContent = formatTime(elapsedSeconds); }
+    },1000);
+  } else if(timerMode === 'countdown'){
+    timerDisplay.textContent = formatTime(countdownSeconds);
+    timerInterval = setInterval(()=>{
+      if(!paused){
+        if(countdownSeconds<=0){ submitQuiz(); clearInterval(timerInterval); }
+        else{ countdownSeconds--; timerDisplay.textContent = formatTime(countdownSeconds); elapsedSeconds++; }
+      }
+    },1000);
+  } else {
+    timerDisplay.textContent = 'No timer';
+  }
+}
+
+// Show question at index
+function showQuestion(idx){
+  if(idx<0) idx=0; if(idx>=currentSet.length) idx=currentSet.length-1;
+  currentIndex = idx;
+  const q = currentSet[idx];
+  currentIndexEl.textContent = idx+1;
+  qText.textContent = q.question;
+  qDomainText.textContent = DOMAIN_LABELS[q.domain];
+  // render choices
+  choicesEl.innerHTML = '';
+  q._shuffledChoices.forEach((text,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="label">${'ABCD'[i]}</div><div style="flex:1">${text}</div>`;
+    // highlight if already answered
+    if(userAnswers[q.id] && userAnswers[q.id].choice===i){
+      btn.style.borderColor = '#c7f0d7';
+      btn.style.background = '#f0fff4';
+    }
+    btn.addEventListener('click', ()=> handleAnswer(q, i));
+    choicesEl.appendChild(btn);
+  });
+  // update counts
+  const answered = Object.keys(userAnswers).length;
+  answeredCountEl.textContent = answered;
+  remainingCountEl.textContent = (currentSet.length - answered);
+  // prev/next state
+  prevBtn.disabled = (idx===0);
+  nextBtn.disabled = (idx===currentSet.length-1);
+}
+
+// Handle answer selection
+function handleAnswer(q, choiceIndex){
+  const t = Math.floor((Date.now()-startTime)/1000);
+  userAnswers[q.id] = {choice: choiceIndex, answeredAt: t};
+  // auto-advance
+  saveAndAdvance();
+}
+
+function saveAndAdvance(){
+  // Visually mark current choice (will re-render)
+  showQuestion(currentIndex);
+  // move to next unanswered or next index
+  if(currentIndex < currentSet.length-1){
+    currentIndex++;
+    showQuestion(currentIndex);
+  } else {
+    // if finished show results
+    if(Object.keys(userAnswers).length === currentSet.length){
+      submitQuiz();
+    } else {
+      // find next unanswered
+      for(let i=0;i<currentSet.length;i++){
+        if(!userAnswers[currentSet[i].id]){ showQuestion(i); return; }
+      }
+      submitQuiz();
+    }
+  }
+}
+
+// Prev/Next
+prevBtn.addEventListener('click', ()=>{ if(currentIndex>0) showQuestion(currentIndex-1); });
+nextBtn.addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1) showQuestion(currentIndex+1); });
+
+// Pause/resume
+pauseBtn.addEventListener('click', ()=>{
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+});
+
+// Quit
+quitBtn.addEventListener('click', ()=>{
+  if(confirm('Quit the quiz? Your answers will be submitted.')) submitQuiz();
+});
+
+// Submit & Results
+function submitQuiz(){
+  if(timerInterval) clearInterval(timerInterval);
+  // compute score
+  const results = currentSet.map(q=>{
+    const user = userAnswers[q.id];
+    const selectedIndex = user ? user.choice : null;
+    const correctIndex = q._shuffledAnswerIndex;
+    const correct = (selectedIndex === correctIndex);
+    return {
+      id: q.id, text: q.question, domain: q.domain,
+      choices: q._shuffledChoices, selectedIndex, correctIndex, correct, rationale: q.rationale
+    };
+  });
+  const total = results.length;
+  const correctCount = results.filter(r=>r.correct).length;
+  displayResults(results, correctCount, total);
+}
+
+// Display results UI
+function displayResults(results, correctCount, total){
+  quizCard.classList.add('hide');
+  resultCard.classList.remove('hide');
+  overallScoreEl.textContent = correctCount;
+  overallTotalEl.textContent = total;
+  timeSpentEl.textContent = formatTime(elapsedSeconds);
+  // domain breakdown
+  const domains = {};
+  results.forEach(r=>{
+    if(!domains[r.domain]) domains[r.domain] = {total:0,correct:0};
+    domains[r.domain].total++;
+    if(r.correct) domains[r.domain].correct++;
+  });
+  domainBreakdownEl.innerHTML = '';
+  for(const d of Object.keys(DOMAIN_LABELS)){
+    if(domains[d]){
+      const t = domains[d].total, c = domains[d].correct;
+      const el = document.createElement('div');
+      el.className = 'tile';
+      el.innerHTML = `<strong>${DOMAIN_LABELS[d]}</strong><div class="small">Score: ${c}/${t} (${Math.round(c/t*100)}%)</div>`;
+      domainBreakdownEl.appendChild(el);
+    }
+  }
+  // summary grid
+  summaryGridEl.innerHTML = '';
+  const overallTile = document.createElement('div'); overallTile.className='tile';
+  overallTile.innerHTML = `<strong>Overall</strong><div class="small">${correctCount}/${total} (${Math.round(correctCount/total*100)}%)</div>`;
+  summaryGridEl.appendChild(overallTile);
+  // review list
+  reviewListEl.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const wrapper = document.createElement('div');
+    wrapper.style.padding='10px'; wrapper.style.borderBottom='1px solid #f1f5f9';
+    const qnum = idx+1;
+    const userLabel = r.selectedIndex==null ? '<em>Unanswered</em>' : 'Your answer: <strong>' + 'ABCD'[r.selectedIndex] + '</strong>';
+    const correctLabel = 'Correct: <strong class="'+(r.correct?'correct':'incorrect')+'">' + 'ABCD'[r.correctIndex] + '</strong>';
+    wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="domain-badge">${DOMAIN_LABELS[r.domain]}</span> Q${qnum}: ${r.text}</div><div style="font-size:13px">${userLabel} · ${correctLabel}</div></div>
+      <div style="margin-top:8px">Choices:</div>
+      <div style="margin-top:6px">${r.choices.map((c,i)=>'<div style="font-size:13px"><strong>'+ 'ABCD'[i] +'.</strong> '+ c + (i===r.correctIndex ? ' <span class="correct">✔</span>' : '') + '</div>').join('')}</div>
+      <div class="rationale"><em>Rationale:</em> ${r.rationale}</div>`;
+    reviewListEl.appendChild(wrapper);
+  });
+}
+
+// Restart & Shuffle: reload with same domain and desired number
+restartBtn.addEventListener('click', ()=>{
+  // show setup again for new config
+  document.getElementById('setupCard').classList.remove('hide');
+  resultCard.classList.add('hide');
+  // restore start button
+  window.scrollTo(0,0);
+});
+
+// Download results as JSON
+downloadBtn.addEventListener('click', ()=>{
+  // gather current result (if on result screen)
+  const data = { timestamp: new Date().toISOString(), domain: domainFilterEl.value, totalAsked: currentSet.length, answers: userAnswers };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='hbse_quiz_results.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+
+// On load: set defaults
+(function(){
+  // default domain ALL
+  domainFilterEl.value='ALL';
+  numItemsEl.value='50';
+  timerModeEl.value='elapsed';
+})();
+</script>
+</body>
+</html>

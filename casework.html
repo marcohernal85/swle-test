@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Social Work Practice I (Casework) — SWLE Practice Quiz (100 items)</title>
+<style>
+:root{
+  --bg:#f7fafc; --card:#fff; --accent:#0b63d6; --muted:#6b7280; --good:#0f9d58; --bad:#d93025;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111;}
+header{background:linear-gradient(90deg,#093c9f22,transparent);padding:14px 16px;border-bottom:1px solid #e6eef8;}
+.wrap{max-width:980px;margin:18px auto;padding:12px;}
+.top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:18px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,input[type="number"]{padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 18px rgba(11,99,214,0.06)}
+.meta{font-size:13px;color:var(--muted)}
+.question-area{display:flex;gap:12px;flex-direction:column}
+.qtext{font-weight:600;padding:8px 0;font-size:16px}
+.choices{display:grid;gap:10px}
+.choice{padding:12px;border-radius:10px;border:1px solid #e6eef8;background:#fbfdff;cursor:pointer;display:flex;gap:10px;align-items:center}
+.choice:hover{background:#f0f8ff}
+.choice .label{font-weight:700;width:22px;height:22px;border-radius:6px;background:#eef6ff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.stats{font-size:13px;color:var(--muted)}
+.small{font-size:13px;color:var(--muted)}
+.hide{display:none}
+.results{margin-top:16px}
+.correct{color:var(--good);font-weight:700}
+.incorrect{color:var(--bad);font-weight:700}
+.domain-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+.timer{font-weight:700}
+@media (max-width:640px){
+  .top{flex-direction:column;align-items:flex-start}
+  .controls{width:100%}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+.question-count{background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e6eef8}
+.review-list{max-height:520px;overflow:auto}
+.rationale{font-size:13px;color:var(--muted);margin-top:6px}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+.tile{padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eef2f7}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1>Social Work Practice I (Casework & Field Instruction I) — SWLE Practice (100)</h1>
+      <div class="meta">Situational Philippine items — interactive, single-file quiz</div>
+    </div>
+    <div class="controls">
+      <label class="small">Items:
+        <select id="numItems"><option>20</option><option>50</option><option selected>100</option><option>200</option><option>All</option></select>
+      </label>
+      <label class="small">Domain:
+        <select id="domainFilter">
+          <option value="ALL">ALL DOMAINS</option>
+          <option value="A">Foundations & Philosophy</option>
+          <option value="B">Social Casework</option>
+          <option value="C">Helping Process (Philippine Context)</option>
+          <option value="D">Casework Helping Process</option>
+          <option value="E">Social Work Counseling</option>
+          <option value="F">Fields of Social Work</option>
+          <option value="G">Communication, Documentation & Emerging Trends</option>
+        </select>
+      </label>
+      <label class="small">Timer mode:
+        <select id="timerMode"><option value="none">None (no limit)</option><option value="elapsed" selected>Elapsed</option><option value="countdown">Countdown</option></select>
+      </label>
+      <label class="small" id="countdownInput" style="display:none">Duration (mins):
+        <input type="number" id="countdownMins" min="1" value="120" style="width:88px">
+      </label>
+      <button id="startBtn">Start Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupCard" class="card">
+    <div class="meta">Select number of items and domain. Questions reflect Philippine practice settings (barangays, LGUs, hospitals, NGOs, schools).</div>
+  </div>
+
+  <div id="quizCard" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <span id="domainBadge" class="domain-badge">ALL DOMAINS</span>
+        <span class="question-count">Q <span id="currentIndex">1</span> / <span id="totalIndex">100</span></span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="timer">Time: <span id="timerDisplay">00:00:00</span></div>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="quitBtn" class="secondary">Quit</button>
+      </div>
+    </div>
+
+    <div class="question-area" style="margin-top:12px">
+      <div id="qDomain" class="meta small">Domain: <strong id="qDomainText"></strong></div>
+      <div id="qText" class="qtext">Question text</div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="footer">
+      <div class="stats">Answered: <span id="answeredCount">0</span> | Remaining: <span id="remainingCount">0</span></div>
+      <div>
+        <button id="prevBtn" class="secondary">Prev</button>
+        <button id="nextBtn" class="secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h3>Results</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div style="margin-top:8px;font-size:14px">
+      <strong>Overall Score:</strong> <span id="overallScore"></span> / <span id="overallTotal"></span>
+      &nbsp; • &nbsp; <strong>Time Spent:</strong> <span id="timeSpent"></span>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Per-domain breakdown</h4>
+      <div id="domainBreakdown"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Review — All Questions</h4>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="restartBtn">Restart & Shuffle</button>
+      <button id="downloadBtn" class="secondary">Download Results (JSON)</button>
+    </div>
+  </div>
+
+  <div id="notes" class="card" style="margin-top:12px">
+    <strong>Notes</strong>
+    <ul>
+      <li class="small">Click an answer choice to record and auto-advance. Pause/resume timer at any time.</li>
+      <li class="small">This quiz runs entirely in your browser; download if you want to keep results.</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+/* ============================
+   QUESTION BANK (100 items)
+   Domains:
+   A - Foundations & Philosophy
+   B - Social Casework
+   C - Helping Process (Philippine Context)
+   D - Casework Helping Process (Assessment, Planning, Intervention)
+   E - Social Work Counseling
+   F - Fields of Social Work (settings)
+   G - Communication, Documentation & Emerging Trends
+   Each question object: {id, domain, question, choices[4], answer: index 0-3, rationale}
+   ============================ */
+
+const QUESTIONS = [
+/* 1-15 A: Foundations & Philosophy (15) */
+{ id:1, domain:'A', question:"A new municipal social worker must explain the principle of client self-determination to barangay captains. Which description is most accurate?",
+  choices:["A. Social workers always decide for clients","B. Clients have the right to make their own choices; workers provide information and support but not coercion","C. Self-determination means clients can ignore laws","D. Workers should never provide advice"], answer:1,
+  rationale:"Self-determination respects clients' right to make informed choices while workers support with relevant information and options."},
+
+{ id:2, domain:'A', question:"During orientation, you are asked why 'confidentiality' is essential in casework. What best explains its purpose?",
+  choices:["A. To keep all agency decisions secret","B. To protect client privacy, build trust, and encourage full disclosure necessary for effective intervention","C. To make record-keeping harder","D. To avoid reporting crimes"], answer:1,
+  rationale:"Confidentiality fosters trust and enables clients to disclose sensitive information essential for assessment and planning."},
+
+{ id:3, domain:'A', question:"A student asks how 'planned change' differs from ad-hoc help. What core feature defines planned change in social work?",
+  choices:["A. It is spontaneous","B. It uses a systematic, goal-oriented process with assessment, intervention, monitoring and evaluation","C. It avoids documentation","D. It only involves donations"], answer:1,
+  rationale:"Planned change is systematic and deliberate, involving assessment, goal-setting, interventions, and evaluation."},
+
+{ id:4, domain:'A', question:"A supervisor emphasizes 'non-discriminatory practice' in a multi-ethnic barangay. Which facilitator action best exemplifies this value?",
+  choices:["A. Prioritize some groups for political reasons","B. Use inclusive language, ensure equitable access, and actively address barriers for marginalized residents","C. Exclude certain dialects","D. Only serve majority groups"], answer:1,
+  rationale:"Non-discrimination requires active inclusion and addressing structural barriers so everyone has equitable access."},
+
+{ id:5, domain:'A', question:"A rural client questions the relevance of social work values. Which example best shows how ethical principles guide practice?",
+  choices:["A. Ignore community choices","B. Uphold client confidentiality, obtain informed consent, and use strengths-based approaches in interventions","C. Always follow funder demands regardless of harm","D. Keep clients uninformed"], answer:1,
+  rationale:"Ethical practice centers on consent, confidentiality and asset-based work that protect and empower clients."},
+
+{ id:6, domain:'A', question:"You're training students on professional boundaries. Which action demonstrates appropriate boundary maintenance?",
+  choices:["A. Accepting gifts of large sums from clients regularly","B. Declining to enter business partnerships with current clients and discussing gift policies transparently","C. Sharing personal home contact information freely","D. Invading clients' privacy to 'help'"], answer:1,
+  rationale:"Maintaining professional boundaries avoids dual relationships that can harm the helping relationship and compromise objectivity."},
+
+{ id:7, domain:'A', question:"At an orientation the term 'generalist social work' comes up. Which task best matches generalist practice?",
+  choices:["A. Provide only psychotherapy","B. Assess, plan, intervene and link clients to resources across micro, mezzo and macro levels","C. Only work with administrators","D. Ignore multidisciplinary coordination"], answer:1,
+  rationale:"Generalist practice is versatile: assessment, intervention, and linking across systems at multiple levels."},
+
+{ id:8, domain:'A', question:"A faculty asks how Filipino indigenous values (e.g., bayanihan) influence casework. Which practice shows integration of these values?",
+  choices:["A. Individualize interventions ignoring community support","B. Mobilize community networks and mutual aid while respecting individual rights and agency","C. Replace professional roles with relatives only","D. Use foreign templates without adaptation"], answer:1,
+  rationale:"Integrating bayanihan means leveraging communal support systems in interventions while maintaining professional ethics."},
+
+{ id:9, domain:'A', question:"A client requests the worker to break confidentiality to tell a relative a harmless secret. What is the correct ethical response?",
+  choices:["A. Share the secret immediately to please the client","B. Explain confidentiality limits, request client consent for disclosure, and only disclose in legally mandated situations or with informed consent","C. Share without consent","D. Publicize the information"], answer:1,
+  rationale:"Confidentiality should be preserved unless there is clear consent or a legal/ethical exception (e.g., harm to self/others)."},
+
+{ id:10, domain:'A', question:"An agency wants to apply strengths-based philosophy. Which program design element reflects this?",
+  choices:["A. Focus only on deficits and problems","B. Identify clients' skills and resources to co-develop plans and build capacities","C. Make clients dependent on services","D. Provide one-size-fits-all solutions"], answer:1,
+  rationale:"Strengths-based approaches build on existing capacities to foster empowerment and sustainability."},
+
+{ id:11, domain:'A', question:"You're asked how social justice perspective affects casework prioritization. Which principle best describes this effect?",
+  choices:["A. Prioritize privileged clients first","B. Prioritize interventions that reduce inequities and increase access for the most vulnerable","C. Ignore systemic causes","D. Base services solely on ability to pay"], answer:1,
+  rationale:"A social justice lens focuses resources to address inequities and reach marginalized populations."},
+
+{ id:12, domain:'A', question:"A student asks why social work is considered both a profession and a discipline. Which statement is accurate?",
+  choices:["A. It is only a hobby","B. It combines an academic knowledge base (theory, research) with professional practice standards and ethics","C. It has no theoretical grounding","D. It is unrelated to practice"], answer:1,
+  rationale:"Social work integrates scholarly knowledge with applied ethical practice standards, making it both discipline and profession."},
+
+{ id:13, domain:'A', question:"A client-centered approach is promoted in training. Which practice shows client-centeredness in assessment?",
+  choices:["A. Imposing diagnostic labels without discussion","B. Eliciting client's perspective, goals and preferences and incorporating them into the plan","C. Ignoring client's stated priorities","D. Only focusing on clinical symptoms"], answer:1,
+  rationale:"Client-centered assessment foregrounds the client's viewpoint and co-creation of goals to ensure relevance and consent."},
+
+{ id:14, domain:'A', question:"A newly hired worker is told to always document interventions. Why is documentation a professional responsibility?",
+  choices:["A. To make work harder","B. To ensure accountability, continuity of care, and legal/ethical recordkeeping","C. To replace client contact","D. To publish clients' stories"], answer:1,
+  rationale:"Documentation supports continuity, accountability and serves as a legal and ethical professional record."},
+
+{ id:15, domain:'A', question:"You must explain 'planned change' to community leaders. Which example best illustrates it?",
+  choices:["A. Spontaneous gift-giving only","B. Conducting assessment, setting objectives, implementing interventions, and evaluating outcomes in a coordinated way","C. Random short-term aid with no follow-up","D. One-off events without goals"], answer:1,
+  rationale:"Planned change entails a systematic process from assessment through evaluation to achieve sustainable outcomes."},
+
+/* 16-35 B: Social Casework (20) */
+{ id:16, domain:'B', question:"A social worker receives a referral of a family facing eviction. What immediate action reflects proper case management?",
+  choices:["A. Ignore urgency and schedule for months later","B. Conduct rapid needs assessment, confirm eligibility for tenancy assistance and link to emergency legal aid","C. Post about the family on social media","D. Evict them faster"], answer:1,
+  rationale:"Urgent cases like eviction require prompt assessment and linkage to appropriate emergency services and legal support."},
+
+{ id:17, domain:'B', question:"During intake a client seems evasive about income. How should the worker respond to obtain accurate information?",
+  choices:["A. Accuse the client of lying","B. Build rapport, explain reasons for information, assure confidentiality and ask sensitively","C. Demand bank statements immediately","D. Refuse service"], answer:1,
+  rationale:"Trust and clear explanation of purpose help clients disclose sensitive financial information honestly."},
+
+{ id:18, domain:'B', question:"A child protection referral requires home visits. What safety consideration is essential for the worker?",
+  choices:["A. Visit alone at night in unknown areas","B. Conduct visits with protocols: inform office of schedule, assess risks, and, if needed, visit with a colleague","C. Enter without assessment","D. Post details of visit online"], answer:1,
+  rationale:"Home visits should prioritize worker and client safety through protocols, scheduling and team approaches when risk is present."},
+
+{ id:19, domain:'B', question:"You must develop a family case plan. Which component is necessary for a quality case plan?",
+  choices:["A. Vague goals only","B. Specific goals, measurable objectives, responsibilities, timelines and resources required","C. Only the worker's opinion","D. No follow-up plan"], answer:1,
+  rationale:"A good case plan is specific, measurable, assigns responsibilities, and includes timelines for review."},
+
+{ id:20, domain:'B', question:"An adult client with disability requests assistance for job placement. Which service action best follows casework principles?",
+  choices:["A. Apply for charity without assessment","B. Assess skills and barriers, coordinate with livelihood programs, and advocate for employer accommodations","C. Tell them they cannot work","D. Only provide cash without planning"], answer:1,
+  rationale:"Assessment, coordination and advocacy align support to the client's capacities and systemic accommodations."},
+
+{ id:21, domain:'B', question:"When conducting a psychosocial assessment, which area should always be included?",
+  choices:["A. Only medical history","B. Family relationships, social supports, strengths, risks, and environmental stressors","C. Social media use only","D. None of the above"], answer:1,
+  rationale:"Comprehensive psychosocial assessments examine relationships, supports, strengths and stressors affecting functioning."},
+
+{ id:22, domain:'B', question:"A caseworker needs to set priorities for a high caseload. Which triage principle is appropriate?",
+  choices:["A. Serve only those who complain loudly","B. Prioritize based on severity, risk (e.g., safety), and potential for harm if delayed","C. Random selection","D. First-come, first-served regardless of risk"], answer:1,
+  rationale:"Triage uses severity and risk to prioritize interventions where delay could result in harm."},
+
+{ id:23, domain:'B', question:"You suspect substance use is contributing to family conflict. Which action should precede intervention?",
+  choices:["A. Confront publicly without support","B. Conduct a non-judgmental assessment, explore readiness to change and plan referrals to appropriate treatment","C. Remove children immediately without assessment","D. Ignore the issue"], answer:1,
+  rationale:"Non-judgmental assessment and readiness evaluation inform appropriate referral and intervention plans."},
+
+{ id:24, domain:'B', question:"A client with limited literacy needs to sign consent. What is the ethical step?",
+  choices:["A. Forgo consent and proceed","B. Explain orally in the client's language, use a witness, and document informed consent appropriately","C. Force them to sign quickly","D. Use technical jargon"], answer:1,
+  rationale:"Informed consent must be communicated clearly and documented in a manner accessible to the client, with witnesses if needed."},
+
+{ id:25, domain:'B', question:"A social worker observes deteriorating mental health in an elderly client. Which immediate casework priority is appropriate?",
+  choices:["A. Suggest immediate institutionalization always","B. Assess safety, refer for medical/psychiatric evaluation, and activate family support and care plans","C. Wait until next month","D. Prescribe medication without authority"], answer:1,
+  rationale:"Observations of decline require safety assessment and medical/psychiatric referral plus social supports to manage care."},
+
+{ id:26, domain:'B', question:"A family refuses help because of stigma. How can a worker ethically increase engagement?",
+  choices:["A. Shame them into compliance","B. Use non-stigmatizing language, offer confidential options, and demonstrate respect for cultural concerns","C. Force entry into their home","D. Publicly name them"], answer:1,
+  rationale:"Reducing stigma through respectful, confidential and culturally sensitive approaches increases uptake of services."},
+
+{ id:27, domain:'B', question:"During reassessment you notice little progress on goals. What is an appropriate professional action?",
+  choices:["A. Close the case immediately","B. Re-evaluate goals, explore barriers, revise the plan and consider alternative services or increased supports","C. Blame the client only","D. Report them for non-compliance"], answer:1,
+  rationale:"When progress stalls, reassessment and plan revision ensure interventions remain relevant and feasible."},
+
+{ id:28, domain:'B', question:"A caregiver asks for advice about disciplining a child. What is the worker's best initial strategy?",
+  choices:["A. Provide punitive strategies only","B. Explore caregiver values, suggest positive discipline techniques and link to parenting programs as needed","C. Recommend physical punishment","D. Avoid the topic"], answer:1,
+  rationale:"Supportive guidance and evidence-based positive discipline approaches respect caregiver autonomy and child rights."},
+
+{ id:29, domain:'B', question:"A client reports financial mismanagement by a family member. What is a prudent social work response?",
+  choices:["A. Offer legal or financial counseling referrals, mediate family discussion if appropriate, and protect vulnerable members' interests","B. Take control of the client's money personally","C. Publicly expose the family member","D. Ignore financial harm"], answer:0,
+  rationale:"Referrals to appropriate services and mediation while protecting vulnerable members balance assistance and ethics."},
+
+{ id:30, domain:'B', question:"A worker suspects elder abuse but the elder denies it. Which step should you take?",
+  choices:["A. Close the case because the elder denied it","B. Respect their autonomy, explore reasons for denial, assess risk, document findings and provide options and support","C. Confront the caregiver aggressively","D. Remove elder without consent"], answer:1,
+  rationale:"Elder denial is common; respectful probing, risk assessment and offering options supports protection without coercion."},
+
+{ id:31, domain:'B', question:"A client with a disability needs accessible service delivery. Which reasonable accommodation is consistent with best practice?",
+  choices:["A. Require them to travel far without assistance","B. Offer home visits, transport support, or accessible offices and communication aids as needed","C. Deny services due to cost","D. Only provide online forms"], answer:1,
+  rationale:"Reasonable accommodations ensure equitable access and uphold clients' rights to services."},
+
+{ id:32, domain:'B', question:"You must close a case after goals are met. Which closure practice promotes sustainability?",
+  choices:["A. Stop contact abruptly","B. Review progress with the client, plan follow-up/support networks and provide referrals for future needs","C. Remove all supports immediately","D. Publish client's story"], answer:1,
+  rationale:"Planned closure consolidates gains and ensures connections to ongoing supports to sustain outcomes."},
+
+{ id:33, domain:'B', question:"A client asks to change their caseworker due to perceived bias. What is the appropriate managerial response?",
+  choices:["A. Dismiss the complaint as trivial","B. Offer a neutral review, reassign if needed, and ensure continuity of care through proper handover","C. Fire the worker immediately","D. Ignore client's request"], answer:1,
+  rationale:"Investigating concerns, ensuring fairness and continuity of services protects client rights and service quality."},
+
+{ id:34, domain:'B', question:"A case file lacks objective evidence for a claim. What documentation step should the worker take?",
+  choices:["A. Fabricate documents","B. Record client's statements clearly, seek corroborating sources (records, witnesses) and document attempts to validate information","C. Close the case immediately","D. Refuse to write any notes"], answer:1,
+  rationale:"Accurate recording and attempts to corroborate information maintain professional standards and evidence-based practice."},
+
+{ id:35, domain:'B', question:"A caregiver is overwhelmed and at risk of burnout. Which casework intervention is most appropriate?",
+  choices:["A. Ignore caregiver needs","B. Provide respite options, link to support services, and develop shared care plans to reduce burden","C. Insist caregiver continue without support","D. Criticize them harshly"], answer:1,
+  rationale:"Respite, support and shared care planning respond to caregiver stress and protect client welfare."},
+
+/* 36-60 C: Helping Process (Philippine Context) (25) */
+{ id:36, domain:'C', question:"A barangay SWO needs to assess community influences on a family's crisis. Which contextual factor is essential to document?",
+  choices:["A. Only household income","B. Local kin networks, barangay services, OFW remittances, and landlord/tenure issues","C. Global political events only","D. Weather only"], answer:1,
+  rationale:"Local social systems (kin, remittances, tenure) shape family resources and must be included in contextual assessment."},
+
+{ id:37, domain:'C', question:"A municipal health officer and social worker coordinate on a child malnutrition case. What collaboration action best supports the family?",
+  choices:["A. Work independently with no communication","B. Share assessment findings (with consent), coordinate referrals, and create a joint care plan addressing health and social needs","C. Only send letters","D. Refer without follow-up"], answer:1,
+  rationale:"Interdisciplinary collaboration with consent ensures comprehensive support addressing both health and social determinants."},
+
+{ id:38, domain:'C', question:"A worker using the PIE (Person-in-Environment) model assesses a family. Which focus aligns with PIE?",
+  choices:["A. Individual pathology only","B. Interactions between individual functioning and environmental supports/stressors (family, community, institutions)","C. Ignore environment","D. Focus solely on diagnosis"], answer:1,
+  rationale:"PIE emphasizes reciprocal relations between person functioning and environmental contexts affecting wellbeing."},
+
+{ id:39, domain:'C', question:"A family affected by flooding needs emergency and longer-term support. Which sequencing is appropriate?",
+  choices:["A. Start livelihood projects before addressing shelter and safety","B. Address immediate safety, shelter and protection first, then plan recovery and livelihood supports","C. Only collect baseline data and delay action","D. Focus only on long-term development"], answer:1,
+  rationale:"Humanitarian response prioritizes life safety and protection, followed by recovery and development planning."},
+
+{ id:40, domain:'C', question:"A social worker in an OFW returnee case must consider migration dynamics. Which factor should be central to assessment?",
+  choices:["A. Only the returnee's resume","B. Reintegration needs, remittance patterns, family relationships, trauma from migration, and legal status","C. Ignore migration history","D. Only employer preferences"], answer:1,
+  rationale:"Returnee reintegration is shaped by financial, familial and psychosocial migration experiences needing holistic assessment."},
+
+{ id:41, domain:'C', question:"A barangay health team requests group casework support for teenage mothers. What culturally-sensitive approach should be included?",
+  choices:["A. Shame-based messaging to deter teen pregnancy","B. Non-judgmental counseling, involvement of supportive family members and use of local community norms respectfully","C. Public naming of participants","D. Mandatory reporting without consent always"], answer:1,
+  rationale:"Supportive, non-judgmental, family-inclusive approaches respect dignity and increase program acceptability."},
+
+{ id:42, domain:'C', question:"A caseworker must apply the concept of 'planned change' in a local child protection case. Which step exemplifies 'planned' action?",
+  choices:["A. Immediate, uncoordinated sheltering without assessment","B. Conducting safety assessment, developing an individual protection plan with family and stakeholders, and monitoring progress","C. Publicizing case details","D. Waiting for directives only"], answer:1,
+  rationale:"Planned change includes assessment, planning with stakeholders, implementation and monitoring for safety and stability."},
+
+{ id:43, domain:'C', question:"In a multi-sectoral referral for a trafficking survivor, which principle ensures coordinated care?",
+  choices:["A. Single-agency control","B. Survivor-centered approach, confidentiality, timely referrals, and case coordination with consent","C. Publicly sharing information with all partners without consent","D. Delay referrals for paperwork"], answer:1,
+  rationale:"Survivor-centered, confidential, and timely multi-sectoral referrals maximize safety and support recovery."},
+
+{ id:44, domain:'C', question:"A social worker working with families affected by poverty must avoid paternalism. Which practice reduces paternalism?",
+  choices:["A. Prescribing solutions without consultation","B. Co-designing interventions with families, respecting their choices and leveraging their resources","C. Making unilateral decisions for them","D. Withholding information"], answer:1,
+  rationale:"Collaborative planning respects client agency and reduces paternalistic imposition of external solutions."},
+
+{ id:45, domain:'C', question:"A community reports rising adolescent delinquency. Which preventive approach should caseworkers recommend?",
+  choices:["A. Strict punitive measures only","B. Youth engagement programs, family support, accessible counseling, and positive skills training","C. Ignore root causes","D. Only increase policing"], answer:1,
+  rationale:"Prevention combines youth-focused engagement, family supports and skills-building rather than purely punitive responses."},
+
+{ id:46, domain:'C', question:"A worker uses genogram in family assessment. What unique insight does a genogram provide?",
+  choices:["A. Nutritional status only","B. Family relationships, intergenerational patterns, and social supports and stressors visually mapped","C. Only financial flows","D. Only medical diagnoses"], answer:1,
+  rationale:"Genograms visually map family structure and relational patterns useful for assessment and intervention."},
+
+{ id:47, domain:'C', question:"A municipal SWO coordinates responses for a displaced informal settler family. Which rights-based step is necessary?",
+  choices:["A. Evict without notice","B. Consult affected families, ensure due process, and seek negotiated tenure or alternatives in line with rights standards","C. Ignore legal protections","D. Use forced relocation without consultation"], answer:1,
+  rationale:"Rights-based practice involves consultation, due process and exploring negotiated, humane solutions."},
+
+{ id:48, domain:'C', question:"A case involves a young father reluctant to engage. What engagement strategy respects Filipino masculine norms while promoting involvement?",
+  choices:["A. Ridicule his concerns","B. Use strengths-based framing, offer flexible meeting times, involve male role models and practical parenting activities","C. Only involve mothers","D. Force him to attend public sessions"], answer:1,
+  rationale:"Culturally sensitive engagement leverages strengths and practical activities to invite participation without shaming."},
+
+{ id:49, domain:'C', question:"A family faces chronic utility debt. What integrated intervention aligns with social work practice?",
+  choices:["A. Disconnect services immediately","B. Negotiate payment plans, connect to emergency cash assistance, and provide budgeting support","C. Evict family without supports","D. Shut off utilities secretly"], answer:1,
+  rationale:"Combining negotiation, financial assistance and budgeting addresses both immediate and underlying problems."},
+
+{ id:50, domain:'C', question:"A disaster-affected mother shows signs of acute stress. Which immediate psychosocial response is appropriate?",
+  choices:["A. Ask her to give a full clinical history immediately","B. Provide psychological first aid: ensure safety, listen, provide comfort, and link to services","C. Ignore her distress","D. Conduct research interview first"], answer:1,
+  rationale:"Psychological first aid focuses on immediate stabilization and linking to supports rather than formal therapy initially."},
+
+{ id:51, domain:'C', question:"A caseworker is developing an intervention plan for a family with a child with special needs. Which stakeholder should be included in planning?",
+  choices:["A. Only the child","B. Parents, the child (as appropriate), school/teachers, healthcare providers and community supports","C. Only the medical team without family input","D. Only local politicians"], answer:1,
+  rationale:"Inclusive planning ensures the child's needs are met across home, school, health and community contexts."},
+
+{ id:52, domain:'C', question:"A social worker needs to consider cultural practices when assessing grief rituals. What best practice should they follow?",
+  choices:["A. Dismiss rituals as irrelevant","B. Ask respectfully about cultural practices, accommodate rituals within ethical bounds and coordinate supports accordingly","C. Impose outsider rituals","D. Forbid rituals entirely"], answer:1,
+  rationale:"Respectful inquiry and accommodation of rituals support culturally appropriate grief responses."},
+
+{ id:53, domain:'C', question:"A family affected by incarceration needs reintegration support. Which approach supports both the returning family member and family stability?",
+  choices:["A. Exclude the returning member from services","B. Provide family counseling, livelihood support, and connect to legal and housing services","C. Demand immediate repayment of debts","D. Ignore family dynamics"], answer:1,
+  rationale:"Comprehensive reintegration includes counseling, economic and legal supports to stabilize the family system."},
+
+{ id:54, domain:'C', question:"A barangay health worker asks whether to involve community leaders in a sensitive domestic violence case. What is the correct consideration?",
+  choices:["A. Involve leaders without consent","B. Only involve community leaders with the survivor's informed consent and if it enhances safety and support","C. Publicize the case widely","D. Never involve anyone"], answer:1,
+  rationale:"Survivor consent and safety determine whether community leader involvement is appropriate due to confidentiality risks."},
+
+{ id:55, domain:'C', question:"A caseworker assessing a child's school problems notes parental stress. Which family-level intervention is appropriate?",
+  choices:["A. Punish the child at school only","B. Offer parenting support, refer parents to economic or psychosocial resources, and coordinate with teachers","C. Transfer the child to another school immediately","D. Blame the parents publicly"], answer:1,
+  rationale:"Addressing parental stress and linking supports helps resolve underlying factors affecting a child's school performance."},
+
+/* 56-75 D: Casework Helping Process (Assessment, Planning, Intervention) (20) */
+{ id:56, domain:'D', question:"In preparing for a family intake, which information is essential to record first?",
+  choices:["A. Only worker's assumptions","B. Presenting problem, safety concerns, key demographics, and immediate needs","C. Only historical political opinions","D. Irrelevant gossip"], answer:1,
+  rationale:"Intake should capture the presenting issue, immediate risks and baseline identifying information for triage and planning."},
+
+{ id:57, domain:'D', question:"When formulating a problem statement, which attribute makes it useful for planning?",
+  choices:["A. Vague generalities","B. Specific, measurable description of the problem, its context and who is affected","C. Blame-oriented language","D. Unsubstantiated rumors"], answer:1,
+  rationale:"Clear, specific problem statements guide measurable objectives and appropriate interventions."},
+
+{ id:58, domain:'D', question:"A worker co-develops SMART objectives with a mother for a child's school attendance. Which objective is SMART?",
+  choices:["A. Improve school attendance someday","B. Increase the child's weekly school attendance from 60% to 90% within 3 months through transport subsidy and parent monitoring","C. Tell the child to 'try harder'","D. Vague notions of improvement"], answer:1,
+  rationale:"SMART objectives are Specific, Measurable, Achievable, Relevant and Time-bound, guiding clear action and evaluation."},
+
+{ id:59, domain:'D', question:"A case plan includes responsibilities for family members. Why is assigning responsibilities important?",
+  choices:["A. To shift blame","B. It clarifies who does what, increases ownership, and supports coordination of actions","C. To punish members","D. To avoid doing the work"], answer:1,
+  rationale:"Clear allocation of tasks fosters accountability and makes progress monitoring feasible."},
+
+{ id:60, domain:'D', question:"As part of intervention you provide parenting skills training. Which adult learning method increases likelihood of skill transfer?",
+  choices:["A. Lecture-only sessions","B. Role-plays, modeling, practice with feedback and home assignment tasks","C. Only reading handouts","D. Quick one-off talks without practice"], answer:1,
+  rationale:"Active learning methods (modeling, practice and feedback) are effective for adult skill acquisition and application."},
+
+{ id:61, domain:'D', question:"A worker plans home-based follow-ups after initial intervention. What is a good practice for scheduling?",
+  choices:["A. Visit at unpredictable hours only","B. Coordinate times with the family, explain purpose, and secure consent for visits","C. Force unscheduled visits","D. Stop visiting without notice"], answer:1,
+  rationale:"Agreed scheduling respects family routines and privacy while improving attendance and cooperation."},
+
+{ id:62, domain:'D', question:"A case involves substance use. Which intervention sequence reflects best practice?",
+  choices:["A. Immediate criminal referral without assessment","B. Assess severity and readiness, provide brief motivational interventions and refer to treatment services as needed","C. Ignore substance use","D. Prescribe medication without medical referral"], answer:1,
+  rationale:"Staged interventions starting with assessment and motivational strategies allow appropriate referral and engagement."},
+
+{ id:63, domain:'D', question:"You implement a safety plan for a woman experiencing intimate partner violence. Which element must be included?",
+  choices:["A. Publish the perpetrator's location","B. Practical steps to increase safety (escape routes, emergency contacts), shelter options and legal/health referrals","C. Force reconciliation without consent","D. No documentation"], answer:1,
+  rationale:"Safety plans offer practical, confidential steps and links to services tailored to survivor choices and safety."},
+
+{ id:64, domain:'D', question:"A family needs assistance to access welfare benefits. What role should the social worker play in this intervention?",
+  choices:["A. Do everything for them without involvement","B. Assist with documentation, accompany to offices if needed, and advocate for timely processing while building family capacity","C. Refuse to help with bureaucratic processes","D. Provide false documents"], answer:1,
+  rationale:"Assistance with paperwork and advocacy removes access barriers while enabling client empowerment."},
+
+{ id:65, domain:'D', question:"A child shows signs of neglect. What assessment finding elevates the case to urgent child protection status?",
+  choices:["A. Poor school grades only","B. Immediate danger to health/safety, severe malnutrition, or ongoing physical neglect without remediation","C. Slight tardiness","D. No concerns"], answer:1,
+  rationale:"Clear and immediate threats to a child's health or safety signal the need for urgent child protection measures."},
+
+{ id:66, domain:'D', question:"A worker must coordinate with health services for a client with TB. Which coordination step improves treatment adherence?",
+  choices:["A. Only give pamphlets","B. Link client to DOTS program, provide psychosocial support, and address transport and stigma barriers","C. Blame the client for non-adherence","D. Avoid healthcare providers"], answer:1,
+  rationale:"Comprehensive linkage and addressing practical/stigma barriers support adherence to TB treatment regimens."},
+
+{ id:67, domain:'D', question:"An elderly client refuses assistance due to pride. Which motivational interviewing technique helps?",
+  choices:["A. Confront them harshly","B. Use open questions, reflective listening, and elicit their own reasons for change (evoking)","C. Disregard their views","D. Force services on them"], answer:1,
+  rationale:"Motivational interviewing respects autonomy and elicits internal motivation through reflective, non-confrontational techniques."},
+
+{ id:68, domain:'D', question:"You need measurable indicators for a case plan addressing child nutrition. Which indicator is appropriate?",
+  choices:["A. 'Better' nutrition without measure","B. Reduction in underweight prevalence among targeted children by 15% in 6 months","C. More meetings only","D. Number of posters printed"], answer:1,
+  rationale:"Indicators should be measurable and time-bound to track objective changes in targeted outcomes."},
+
+{ id:69, domain:'D', question:"A family refuses to implement recommended changes. What is a constructive worker response?",
+  choices:["A. Force compliance","B. Explore their concerns, renegotiate goals and consider small incremental steps or alternatives","C. Dismiss them from service","D. Report them to police immediately"], answer:1,
+  rationale:"Understanding resistance and negotiating realistic, acceptable steps respects client autonomy and improves engagement."},
+
+{ id:70, domain:'D', question:"A worker documents a home visit. Which entry best supports continuity of care?",
+  choices:["A. 'Visited. Nothing happened.'","B. Brief description of observed conditions, interventions provided, referrals made and follow-up plan with dates","C. Personal opinions about the family","D. Irrelevant details"], answer:1,
+  rationale:"Concise, factual notes about observations, actions and plans support follow-up and coordination of services."},
+
+{ id:71, domain:'D', question:"During intervention you discover a legal issue (e.g., custody dispute). What is the social worker's primary role?",
+  choices:["A. Provide legal counsel as a lawyer","B. Refer to legal aid, coordinate with counselors and support the client's decisions while documenting needs","C. Ignore legal needs","D. Represent the client in court without qualification"], answer:1,
+  rationale:"Social workers link clients to qualified legal services while continuing psychosocial support and documentation."},
+
+{ id:72, domain:'D', question:"A case plan includes monitoring. Which frequency is reasonable for high-risk cases?",
+  choices:["A. Once a year","B. Frequent contact (weekly or biweekly) dependent on risk level, with clear indicators to track","C. Only on client's request","D. Never monitor"], answer:1,
+  rationale:"High-risk situations require frequent monitoring proportionate to the risk to ensure safety and responsiveness."},
+
+{ id:73, domain:'D', question:"A father is ambivalent about attending parenting sessions. What scheduling adaptation could improve participation?",
+  choices:["A. Only morning sessions during working hours","B. Offer evening or weekend sessions, or workplace-linked trainings to fit work schedules","C. Cancel sessions when fathers are absent","D. Require mandatory daytime attendance only"], answer:1,
+  rationale:"Flexible scheduling that fits caregivers' work patterns improves engagement and attendance."},
+
+{ id:74, domain:'D', question:"A worker is assessing a family's capacity to care for a disabled child. Which economic factor should be considered in the plan?",
+  choices:["A. Only emotional factors matter","B. Household income stability, access to social pensions/subsidies, and potential livelihood supports","C. Ignore finances","D. Assume unlimited resources"], answer:1,
+  rationale:"Economic capacity affects the feasibility of care plans and must inform realistic intervention design."},
+
+{ id:75, domain:'D', question:"You implement an individualized behavior plan for a youth. Which step ensures the plan is ethical and effective?",
+  choices:["A. Implement without consent","B. Involve the youth and caregivers in planning, set measurable behaviors, and include reinforcement and periodic review","C. Punish secretly","D. Keep the plan hidden"], answer:1,
+  rationale:"Collaborative, measurable and reviewed behavior plans respect rights and allow tracking of effectiveness."},
+
+/* 76-85 E: Social Work Counseling (10) */
+{ id:76, domain:'E', question:"A client asks about limits of social work counseling. Which reply best explains scope and limits?",
+  choices:["A. We can prescribe medication","B. Counseling offers psychosocial support and problem-solving but not psychotherapy beyond competencies; referrals are made when specialized care is needed","C. We can perform surgery","D. There are no limits"], answer:1,
+  rationale:"Social work counselors provide psychosocial interventions and refer clinical cases requiring specialized treatment."},
+
+{ id:77, domain:'E', question:"Which counseling stance is foundational for building rapport in Filipino contexts?",
+  choices:["A. Authoritarian and directive always","B. Warmth, respect, active listening and cultural sensitivity to values like pakikiramay and loob","C. Distant and cold approach","D. Use only technical jargon"], answer:1,
+  rationale:"Rapport is built through culturally attuned warmth, empathy and respectful listening, aligning with Filipino relational values."},
+
+{ id:78, domain:'E', question:"A counseling session includes crisis disclosure (suicidal ideation). What is the first ethical step?",
+  choices:["A. Keep it confidential without action","B. Conduct immediate risk assessment, ensure safety, and arrange urgent referral to mental health services while informing about confidentiality limits","C. Ignore the disclosure","D. Ask others to handle it without assessment"], answer:1,
+  rationale:"Suicidal disclosures require risk assessment, safety planning and urgent referral, with client informed about confidentiality limits."},
+
+{ id:79, domain:'E', question:"A counselor uses active listening. Which technique demonstrates active listening?",
+  choices:["A. Interrupting to give advice immediately","B. Reflecting content and feelings, summarizing and asking clarifying questions","C. Checking phone during session","D. Lecturing the client"], answer:1,
+  rationale:"Reflective listening and summarization indicate understanding and encourage deeper client exploration."},
+
+{ id:80, domain:'E', question:"A counselor is using solution-focused techniques. Which question exemplifies this approach?",
+  choices:["A. 'Why are you always like this?'","B. 'What would be different if this problem were partly solved tomorrow? What small step could you try?'", "C. 'Tell me every childhood memory.'", "D. 'You must change immediately'"], answer:1,
+  rationale:"Solution-focused questions target exceptions and practical next steps that clients can try to create change."},
+
+{ id:81, domain:'E', question:"A client feels hopeless about job prospects. Which counseling intervention can strengthen agency?",
+  choices:["A. Provide only sympathy with no action","B. Explore strengths, set achievable job-search goals, role-play interviews and link to employment services","C. Tell them to give up","D. Criticize their past choices"], answer:1,
+  rationale:"Strength-based counseling with concrete skill practice and resource linkage enhances empowerment and practical outcomes."},
+
+{ id:82, domain:'E', question:"A counselor notes cultural taboos may affect disclosure. How should the counselor adapt?",
+  choices:["A. Force disclosure in public settings","B. Use culturally appropriate language, ensure privacy, and build trust before exploring sensitive topics","C. Avoid discussing sensitive matters entirely","D. Dismiss cultural concerns"], answer:1,
+  rationale:"Adapting language and setting to cultural norms ensures respectful and effective inquiry into sensitive areas."},
+
+{ id:83, domain:'E', question:"A counselor observes vicarious trauma symptoms in themselves. Which self-care practice is professionally recommended?",
+  choices:["A. Ignore symptoms and work more","B. Seek supervision, peer support, set boundaries and use structured self-care practices","C. Share client details publicly","D. Quit without reflection"], answer:1,
+  rationale:"Supervision, peer support, boundaries and deliberate self-care protect workers from burnout and vicarious trauma."},
+
+{ id:84, domain:'E', question:"A counselor uses motivational interviewing with an ambivalent client. Which response reflects MI spirit?",
+  choices:["A. Confrontation and arguing","B. Express empathy, roll with resistance, support self-efficacy and elicit change talk","C. Lecture about consequences only","D. Threaten punitive measures"], answer:1,
+  rationale:"MI is collaborative, non-confrontational and aims to evoke clients' own motivations for change."},
+
+{ id:85, domain:'E', question:"A counselor must document sessions. Which entry respects both usefulness and confidentiality?",
+  choices:["A. Record full verbatim personal statements including identifying details","B. Concise summary of themes, goals, progress and agreed actions, stored securely and access-limited","C. Publish notes online","D. Avoid documenting anything"], answer:1,
+  rationale:"Concise, secure documentation balances clinical utility with client confidentiality and data protection."},
+
+/* 86-93 F: Fields of Social Work (8) */
+{ id:86, domain:'F', question:"A graduate asks which setting is best for family-focused casework practice. Which setting typically offers direct family casework opportunities?",
+  choices:["A. Corporate sales only","B. Welfare agencies, hospitals, child protection units, and community-based NGOs","C. International marketing exclusively","D. None"], answer:1,
+  rationale:"Direct family casework commonly occurs in welfare agencies, hospitals, child protection and community NGOs."},
+
+{ id:87, domain:'F', question:"Working in schools, which casework role is commonly required?",
+  choices:["A. Only administrative paperwork","B. Counseling students, liaising with families, coordinating referrals and supporting learners' reintegration","C. Teaching math only","D. No engagement with parents"], answer:1,
+  rationale:"School social workers provide counseling, family liaison and coordination to support educational success."},
+
+{ id:88, domain:'F', question:"A hospital social worker must plan discharge for a patient with limited family support. Which action is essential?",
+  choices:["A. Discharge without planning","B. Coordinate with community care, arrange home support, and link to social pensions or disability services","C. Send patient back to hospital unassisted","D. Assume family will manage"], answer:1,
+  rationale:"Safe discharge planning involves arranging community supports and entitlements for vulnerable patients."},
+
+{ id:89, domain:'F', question:"In the corrections setting, which principle is crucial for social work practice?",
+  choices:["A. Ignore rehabilitation and focus on punishment","B. Promote rehabilitation, reintegration planning, and respect for offender rights while ensuring community safety","C. Publicly shame inmates","D. Disregard family links"], answer:1,
+  rationale:"Correctional social work balances rehabilitation, reintegration and rights protection alongside public safety."},
+
+{ id:90, domain:'F', question:"A social worker employed by a corporate CSR program must ensure ethical practice. Which approach aligns with professional values?",
+  choices:["A. Conceal program impacts","B. Ensure community consultation, transparency, and alignment with community needs rather than only corporate goals","C. Prioritize corporate image exclusively","D. Use tokenistic gestures only"], answer:1,
+  rationale:"Ethical CSR practice centers consultation, transparency, and responsiveness to community-defined needs."},
+
+{ id:91, domain:'F', question:"A disaster response team needs social work input. Which contribution is most appropriate?",
+  choices:["A. Only handle logistics","B. Conduct psychosocial assessments, provide PFA, support family tracing and liaise with services","C. Focus only on fundraising","D. Avoid field contact"], answer:1,
+  rationale:"Social workers provide psychosocial aid, family reunification and service coordination in disaster settings."},
+
+{ id:92, domain:'F', question:"Working in community development, which groupwork method complements casework?",
+  choices:["A. Only individualized cash transfers","B. Formation of mutual aid groups, savings groups and community committees for collective action","C. Ignore community structures","D. Top-down implementation only"], answer:1,
+  rationale:"Community group formation builds social capital and complements individual case interventions for sustainability."},
+
+{ id:93, domain:'F', question:"A social worker in a mental health NGO wants to integrate services with primary care. Which strategy supports this integration?",
+  choices:["A. Keep services isolated","B. Train primary care staff on basic psychosocial support and set referral pathways with supervision","C. Replace primary care clinicians","D. Provide only online resources"], answer:1,
+  rationale:"Training and clear referral pathways facilitate integration of psychosocial care into primary health services."},
+
+/* 94-100 G: Communication, Documentation & Emerging Trends (7) */
+{ id:94, domain:'G', question:"A supervisor requests an outcome report for funders. Which reporting approach communicates impact clearly?",
+  choices:["A. Only emotive stories without data","B. Combine clear indicators (e.g., attendance, outcome changes), short case vignettes (with consent) and next steps","C. Only budget details","D. Publish identifiable client information"], answer:1,
+  rationale:"Balanced reporting combines quantitative indicators and anonymized qualitative vignettes to show impact responsibly."},
+
+{ id:95, domain:'G', question:"A worker uses mobile messaging to follow up with clients. What privacy practice is essential?",
+  choices:["A. Send detailed case notes by public message","B. Obtain consent, use secure channels, and avoid disclosing sensitive details in group messages","C. Post client names publicly","D. Use unencrypted broadcast lists with identifying info"], answer:1,
+  rationale:"Mobile follow-up must protect confidentiality through consent, secure channels and limited content disclosure."},
+
+{ id:96, domain:'G', question:"A practicum student is asked to present a case study. Which permission is required before sharing client material?",
+  choices:["A. No permission needed for learning","B. Informed consent from the client (preferably in writing) and anonymization of identifying details","C. Share everything including identifiable photos","D. Share on social media for class"], answer:1,
+  rationale:"Client consent and anonymization are required to ethically use case material for teaching or presentation."},
+
+{ id:97, domain:'G', question:"An agency wants to adopt telepractice for counseling. Which consideration should guide implementation?",
+  choices:["A. Ignore client access and digital literacy","B. Assess client access, privacy, suitability, obtain consent, and provide alternatives for those without access","C. Force everyone online","D. Replace all face-to-face services instantly"], answer:1,
+  rationale:"Telepractice needs assessment of access, privacy and consent, with alternatives for digitally excluded clients."},
+
+{ id:98, domain:'G', question:"A worker must maintain case files for auditing. Which file practice reduces audit risk?",
+  choices:["A. Keep disorganized notes","B. Maintain dated, factual, objective records of assessments, plans, interventions and consents in secure storage","C. Destroy records arbitrarily","D. Archive client names publicly"], answer:1,
+  rationale:"Organized, factual and secure records support accountability and reduce audit findings."},
+
+{ id:99, domain:'G', question:"A team discusses emerging trends in social work. Which trend is most important to prepare for local practice?",
+  choices:["A. Ignoring technology advances","B. Growing use of digital case management, telepractice, and data-driven monitoring while keeping ethical safeguards","C. Eliminating fieldwork entirely","D. Only traditional paperwork"], answer:1,
+  rationale:"Digital tools and data-driven practice are expanding; preparing with ethics and access considerations is essential."},
+
+{ id:100, domain:'G', question:"A social work student asks how to communicate bad news to a family (e.g., service denial). Which approach is recommended?",
+  choices:["A. Deliver the news bluntly without support","B. Use clear, compassionate language, allow time for questions, explain reasons and provide alternative options or appeals","C. Avoid informing them","D. Send a text only"], answer:1,
+  rationale:"Compassionate, clear communication with options for appeal and support respects dignity and transparency."}
+];
+
+/* Domain labels for UI */
+const DOMAIN_LABELS = {
+  'A':'Foundations & Philosophy',
+  'B':'Social Casework',
+  'C':'Helping Process (Philippine Context)',
+  'D':'Casework Helping Process',
+  'E':'Social Work Counseling',
+  'F':'Fields of Social Work',
+  'G':'Communication, Documentation & Emerging Trends'
+};
+
+/* App state & DOM refs */
+let pool = [];
+let currentSet = [];
+let userAnswers = {};
+let currentIndex = 0;
+let totalToTake = 100;
+let timerMode = 'elapsed';
+let timerInterval = null;
+let startTime = null;
+let paused = false;
+let elapsedSeconds = 0;
+let countdownSeconds = 0;
+
+const startBtn = document.getElementById('startBtn');
+const numItemsEl = document.getElementById('numItems');
+const domainFilterEl = document.getElementById('domainFilter');
+const timerModeEl = document.getElementById('timerMode');
+const countdownInput = document.getElementById('countdownInput');
+const countdownMins = document.getElementById('countdownMins');
+
+const quizCard = document.getElementById('quizCard');
+const qText = document.getElementById('qText');
+const choicesEl = document.getElementById('choices');
+const qDomainText = document.getElementById('qDomainText');
+const domainBadge = document.getElementById('domainBadge');
+
+const currentIndexEl = document.getElementById('currentIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const answeredCountEl = document.getElementById('answeredCount');
+const remainingCountEl = document.getElementById('remainingCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const pauseBtn = document.getElementById('pauseBtn');
+const quitBtn = document.getElementById('quitBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+const resultCard = document.getElementById('resultCard');
+const overallScoreEl = document.getElementById('overallScore');
+const overallTotalEl = document.getElementById('overallTotal');
+const timeSpentEl = document.getElementById('timeSpent');
+const domainBreakdownEl = document.getElementById('domainBreakdown');
+const reviewListEl = document.getElementById('reviewList');
+const summaryGridEl = document.getElementById('summaryGrid');
+const restartBtn = document.getElementById('restartBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+  return array;
+}
+
+function formatTime(s){
+  const h = Math.floor(s/3600); s%=3600;
+  const m = Math.floor(s/60); const sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function loadPool(){
+  const domain = domainFilterEl.value;
+  pool = (domain === 'ALL') ? [...QUESTIONS] : QUESTIONS.filter(q=>q.domain===domain);
+}
+
+startBtn.addEventListener('click', ()=>{
+  loadPool();
+  const selected = numItemsEl.value;
+  if(selected === 'All') totalToTake = pool.length;
+  else totalToTake = parseInt(selected,10);
+  if(totalToTake > pool.length){
+    alert(`Only ${pool.length} questions available for selected domain. Using ${pool.length} instead.`);
+    totalToTake = pool.length;
+  }
+  timerMode = timerModeEl.value;
+  if(timerMode === 'countdown'){
+    countdownSeconds = Math.max(60, parseInt(countdownMins.value,10) * 60);
+  }
+  initQuiz();
+});
+
+timerModeEl.addEventListener('change', ()=>{
+  if(timerModeEl.value === 'countdown') countdownInput.style.display = 'inline-block';
+  else countdownInput.style.display = 'none';
+});
+
+function initQuiz(){
+  userAnswers = {};
+  currentIndex = 0;
+  elapsedSeconds = 0;
+  paused = false;
+  startTime = Date.now();
+  currentSet = shuffle(pool.slice()).slice(0,totalToTake);
+  currentSet = currentSet.map(q=>{
+    const choices = q.choices.map((c,i)=>({c,i}));
+    shuffle(choices);
+    const newIndex = choices.findIndex(x=>x.i===q.answer);
+    return {...q, _shuffledChoices: choices.map(x=>x.c), _shuffledAnswerIndex: newIndex};
+  });
+  document.getElementById('totalIndex').textContent = currentSet.length;
+  domainBadge.textContent = (domainFilterEl.value==='ALL') ? 'ALL DOMAINS' : DOMAIN_LABELS[domainFilterEl.value];
+  document.getElementById('setupCard').classList?.add('hide');
+  quizCard.classList.remove('hide');
+  resultCard.classList.add('hide');
+  showQuestion(0);
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerMode === 'elapsed'){
+    timerDisplay.textContent = formatTime(0);
+    timerInterval = setInterval(()=>{ if(!paused){ elapsedSeconds++; timerDisplay.textContent = formatTime(elapsedSeconds); } },1000);
+  } else if(timerMode === 'countdown'){
+    timerDisplay.textContent = formatTime(countdownSeconds);
+    timerInterval = setInterval(()=>{
+      if(!paused){
+        if(countdownSeconds<=0){ submitQuiz(); clearInterval(timerInterval); }
+        else{ countdownSeconds--; timerDisplay.textContent = formatTime(countdownSeconds); elapsedSeconds++; }
+      }
+    },1000);
+  } else {
+    timerDisplay.textContent = 'No timer';
+  }
+}
+
+function showQuestion(idx){
+  if(idx<0) idx=0; if(idx>=currentSet.length) idx=currentSet.length-1;
+  currentIndex = idx;
+  const q = currentSet[idx];
+  currentIndexEl.textContent = idx+1;
+  qText.textContent = q.question;
+  qDomainText.textContent = DOMAIN_LABELS[q.domain];
+  choicesEl.innerHTML = '';
+  q._shuffledChoices.forEach((text,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="label">${'ABCD'[i]}</div><div style="flex:1">${text}</div>`;
+    if(userAnswers[q.id] && userAnswers[q.id].choice===i){
+      btn.style.borderColor = '#c7f0d7'; btn.style.background = '#f0fff4';
+    }
+    btn.addEventListener('click', ()=> handleAnswer(q, i));
+    choicesEl.appendChild(btn);
+  });
+  const answered = Object.keys(userAnswers).length;
+  answeredCountEl.textContent = answered;
+  remainingCountEl.textContent = (currentSet.length - answered);
+  prevBtn.disabled = (idx===0);
+  nextBtn.disabled = (idx===currentSet.length-1);
+}
+
+function handleAnswer(q, choiceIndex){
+  const t = Math.floor((Date.now()-startTime)/1000);
+  userAnswers[q.id] = {choice: choiceIndex, answeredAt: t};
+  saveAndAdvance();
+}
+
+function saveAndAdvance(){
+  showQuestion(currentIndex);
+  if(currentIndex < currentSet.length-1){
+    currentIndex++;
+    showQuestion(currentIndex);
+  } else {
+    if(Object.keys(userAnswers).length === currentSet.length){
+      submitQuiz();
+    } else {
+      for(let i=0;i<currentSet.length;i++){
+        if(!userAnswers[currentSet[i].id]){ showQuestion(i); return; }
+      }
+      submitQuiz();
+    }
+  }
+}
+
+prevBtn.addEventListener('click', ()=>{ if(currentIndex>0) showQuestion(currentIndex-1); });
+nextBtn.addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1) showQuestion(currentIndex+1); });
+
+pauseBtn.addEventListener('click', ()=>{ paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; });
+quitBtn.addEventListener('click', ()=>{ if(confirm('Quit the quiz? Your answers will be submitted.')) submitQuiz(); });
+
+function submitQuiz(){
+  if(timerInterval) clearInterval(timerInterval);
+  const results = currentSet.map(q=>{
+    const user = userAnswers[q.id];
+    const selectedIndex = user ? user.choice : null;
+    const correctIndex = q._shuffledAnswerIndex;
+    const correct = (selectedIndex === correctIndex);
+    return { id:q.id, text:q.question, domain:q.domain, choices:q._shuffledChoices, selectedIndex, correctIndex, correct, rationale:q.rationale };
+  });
+  const total = results.length;
+  const correctCount = results.filter(r=>r.correct).length;
+  displayResults(results, correctCount, total);
+}
+
+function displayResults(results, correctCount, total){
+  quizCard.classList.add('hide');
+  resultCard.classList.remove('hide');
+  overallScoreEl.textContent = correctCount;
+  overallTotalEl.textContent = total;
+  timeSpentEl.textContent = formatTime(elapsedSeconds);
+  const domains = {};
+  results.forEach(r=>{
+    if(!domains[r.domain]) domains[r.domain] = {total:0,correct:0};
+    domains[r.domain].total++; if(r.correct) domains[r.domain].correct++;
+  });
+  domainBreakdownEl.innerHTML = '';
+  for(const d of Object.keys(DOMAIN_LABELS)){
+    if(domains[d]){
+      const t = domains[d].total, c = domains[d].correct;
+      const el = document.createElement('div'); el.className='tile';
+      el.innerHTML = `<strong>${DOMAIN_LABELS[d]}</strong><div class="small">Score: ${c}/${t} (${Math.round(c/t*100)}%)</div>`;
+      domainBreakdownEl.appendChild(el);
+    }
+  }
+  summaryGridEl.innerHTML = '';
+  const overallTile = document.createElement('div'); overallTile.className='tile';
+  overallTile.innerHTML = `<strong>Overall</strong><div class="small">${correctCount}/${total} (${Math.round(correctCount/total*100)}%)</div>`;
+  summaryGridEl.appendChild(overallTile);
+  reviewListEl.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const wrapper = document.createElement('div'); wrapper.style.padding='10px'; wrapper.style.borderBottom='1px solid #f1f5f9';
+    const qnum = idx+1;
+    const userLabel = r.selectedIndex==null ? '<em>Unanswered</em>' : 'Your answer: <strong>' + 'ABCD'[r.selectedIndex] + '</strong>';
+    const correctLabel = 'Correct: <strong class="'+(r.correct?'correct':'incorrect')+'">' + 'ABCD'[r.correctIndex] + '</strong>';
+    wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="domain-badge">${DOMAIN_LABELS[r.domain]}</span> Q${qnum}: ${r.text}</div><div style="font-size:13px">${userLabel} · ${correctLabel}</div></div>
+      <div style="margin-top:8px">Choices:</div>
+      <div style="margin-top:6px">${r.choices.map((c,i)=>'<div style="font-size:13px"><strong>'+ 'ABCD'[i] +'.</strong> '+ c + (i===r.correctIndex ? ' <span class="correct">✔</span>' : '') + '</div>').join('')}</div>
+      <div class="rationale"><em>Rationale:</em> ${r.rationale}</div>`;
+    reviewListEl.appendChild(wrapper);
+  });
+}
+
+restartBtn.addEventListener('click', ()=>{ document.getElementById('setupCard').classList.remove('hide'); resultCard.classList.add('hide'); window.scrollTo(0,0); });
+
+downloadBtn.addEventListener('click', ()=>{
+  const data = { timestamp: new Date().toISOString(), domain: domainFilterEl.value, totalAsked: currentSet.length, answers: userAnswers };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='casework_quiz_results.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* default settings */
+(function(){ domainFilterEl.value='ALL'; numItemsEl.value='100'; timerModeEl.value='elapsed'; })();
+</script>
+</body>
+</html>
