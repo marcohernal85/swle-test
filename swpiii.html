@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Social Work Practice III & Field Instruction III — SWLE Practice Quiz (100 items)</title>
+<style>
+  :root{
+    --bg:#f7fafc; --card:#ffffff; --accent:#0b63d6; --muted:#6b7280; --good:#0f9d58; --bad:#d93025;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111;}
+  header{background:linear-gradient(90deg,#093c9f22,transparent);padding:14px 16px;border-bottom:1px solid #e6eef8;}
+  .wrap{max-width:980px;margin:18px auto;padding:12px;}
+  .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  h1{margin:0;font-size:18px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,input[type="number"]{padding:8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+  button.secondary{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 6px 18px rgba(11,99,214,0.06)}
+  .meta{font-size:13px;color:var(--muted)}
+  .question-area{display:flex;gap:12px;flex-direction:column}
+  .qtext{font-weight:600;padding:8px 0;font-size:16px}
+  .choices{display:grid;gap:10px}
+  .choice{padding:12px;border-radius:10px;border:1px solid #e6eef8;background:#fbfdff;cursor:pointer;display:flex;gap:10px;align-items:center}
+  .choice:hover{background:#f0f8ff}
+  .choice .label{font-weight:700;width:22px;height:22px;border-radius:6px;background:#eef6ff;color:var(--accent);display:inline-flex;align-items:center;justify-content:center}
+  .footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .stats{font-size:13px;color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .hide{display:none}
+  .results{margin-top:16px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:13px}
+  .correct{color:var(--good);font-weight:700}
+  .incorrect{color:var(--bad);font-weight:700}
+  .domain-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+  .timer{font-weight:700}
+  @media (max-width:640px){
+    .top{flex-direction:column;align-items:flex-start}
+    .controls{width:100%}
+    .footer{flex-direction:column;align-items:flex-start}
+  }
+  .question-count{background:#f8fafc;border-radius:8px;padding:6px 10px;border:1px solid #e6eef8}
+  .review-list{max-height:520px;overflow:auto}
+  .rationale{font-size:13px;color:var(--muted);margin-top:6px}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:12px}
+  .tile{padding:10px;border-radius:8px;background:#fafafa;border:1px solid #eef2f7}
+  .answer-key{font-size:13px;margin-top:12px}
+  .monospace{font-family:monospace, monospace;}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <h1>Social Work Practice III & Field Instruction III — SWLE Practice (100)</h1>
+      <div class="meta">Practice III (Communities) — 100 situational Philippine-context MCQs</div>
+    </div>
+    <div class="controls">
+      <label class="small">Items:
+        <select id="numItems"><option>20</option><option>50</option><option selected>100</option><option>200</option><option>All</option></select>
+      </label>
+      <label class="small">Domain:
+        <select id="domainFilter">
+          <option value="ALL">ALL DOMAINS</option>
+          <option value="A">Foundations & Community Concepts</option>
+          <option value="B">Models & Theory in Community Work</option>
+          <option value="C">Phases of Community Organizing</option>
+          <option value="D">Tools of Analysis & M&E</option>
+          <option value="E">Community Organizer Roles & Skills</option>
+          <option value="F">Community Education & Training</option>
+          <option value="G">Field Instruction III & Organizational Development</option>
+        </select>
+      </label>
+      <label class="small">Timer mode:
+        <select id="timerMode"><option value="none">None (no limit)</option><option value="elapsed" selected>Elapsed</option><option value="countdown">Countdown</option></select>
+      </label>
+      <label class="small" id="countdownInput" style="display:none">Duration (mins):
+        <input type="number" id="countdownMins" min="1" value="120" style="width:88px">
+      </label>
+      <button id="startBtn">Start Quiz</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupCard" class="card">
+    <div class="meta">Select items and domain. Questions are situational, Philippine setting, and professional-level difficulty for SWLE preparation.</div>
+  </div>
+
+  <div id="quizCard" class="card hide">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <span id="domainBadge" class="domain-badge">ALL DOMAINS</span>
+        <span class="question-count">Q <span id="currentIndex">1</span> / <span id="totalIndex">100</span></span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div class="timer">Time: <span id="timerDisplay">00:00:00</span></div>
+        <button id="pauseBtn" class="secondary">Pause</button>
+        <button id="quitBtn" class="secondary">Quit</button>
+      </div>
+    </div>
+
+    <div class="question-area" style="margin-top:12px">
+      <div id="qDomain" class="meta small">Domain: <strong id="qDomainText"></strong></div>
+      <div id="qText" class="qtext">Question text</div>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div class="footer">
+      <div class="stats">Answered: <span id="answeredCount">0</span> | Remaining: <span id="remainingCount">0</span></div>
+      <div>
+        <button id="prevBtn" class="secondary">Prev</button>
+        <button id="nextBtn" class="secondary">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultCard" class="card hide">
+    <h3>Results</h3>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div style="margin-top:8px;font-size:14px">
+      <strong>Overall Score:</strong> <span id="overallScore"></span> / <span id="overallTotal"></span>
+      &nbsp; • &nbsp; <strong>Time Spent:</strong> <span id="timeSpent"></span>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Per-domain breakdown</h4>
+      <div id="domainBreakdown"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Review — All Questions</h4>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button id="restartBtn">Restart & Shuffle</button>
+      <button id="downloadBtn" class="secondary">Download Results (JSON)</button>
+      <button id="showKeyBtn" class="secondary">Show Answer Key (All)</button>
+    </div>
+
+    <div id="answerKeyArea" class="card hide" style="margin-top:14px">
+      <h4>Answer Key (Q1–Q100)</h4>
+      <div id="answerKey" class="answer-key monospace"></div>
+    </div>
+
+  </div>
+
+  <div id="notes" class="card" style="margin-top:12px">
+    <strong>Notes</strong>
+    <ul>
+      <li class="small">Click a choice to record and auto-advance. Pause/resume the timer as needed.</li>
+      <li class="small">Questions are localized to Philippine community practice situations (barangay, NGOs, local governance, disaster, OFW families, etc.).</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+/* ============================================================
+   Practice III (Communities) — 100 situational MCQs (Philippine)
+   Domains:
+   A - Foundations & Community Concepts
+   B - Models & Theory in Community Work
+   C - Phases of Community Organizing
+   D - Tools of Analysis & Monitoring & Evaluation
+   E - Community Organizer Roles & Skills
+   F - Community Education & Training
+   G - Field Instruction III & Organizational Development
+   Each item: id, domain, question, choices[4], answer index (0-3), rationale
+   ============================================================ */
+
+/* NOTE: Questions are situational and intended for SWLE practice; rationales are short (1-3 sentences). */
+
+const QUESTIONS = [
+/* 1-15 A: Foundations & Community Concepts (15) */
+{ id:1, domain:'A', question:"A barangay social worker is asked to define 'community' to new volunteers. Which definition best reflects community as used in community organization practice?",
+  choices:["A. A group of people who look the same","B. A social system with shared spaces, relationships, institutions and interactions that shape collective life","C. Only people living in the same house","D. Any random collection of individuals"], answer:1,
+  rationale:"Community in social work is a social system—defined by relationships, institutions and shared life—rather than merely co-location."},
+
+{ id:2, domain:'A', question:"A team is planning interventions in a mobile urban community (vendors). Which understanding of community is most important for program design?",
+  choices:["A. Only permanent residents matter","B. Consider fluid boundaries, economic ties, and occupational networks that sustain vendor communities","C. Treat them like static rural communities","D. Ignore their economic roles"], answer:1,
+  rationale:"Mobile urban communities require attention to occupational networks and fluid membership rather than fixed geographical boundaries."},
+
+{ id:3, domain:'A', question:"In orienting volunteers to community entry, the worker emphasizes ethical practice. Which of the following is an ethical community entry step?",
+  choices:["A. Enter and distribute aid without consultation","B. Conduct social investigation, consult leaders, and secure informed consent from community representatives","C. Announce plans without listening","D. Force participation"], answer:1,
+  rationale:"Ethical community entry includes investigation, consultation and consent to respect autonomy and avoid harm."},
+
+{ id:4, domain:'A', question:"A team must select an area for a pilot project using rights-based principles. Which selection criterion aligns with rights-based practice?",
+  choices:["A. Choose the most convenient area for staff","B. Prioritize marginalized communities with unmet rights and capacity to participate in decision-making","C. Pick the wealthiest barangay","D. Avoid community input"], answer:1,
+  rationale:"Rights-based selection focuses on marginalized groups who lack access to entitlements and can benefit from empowerment."},
+
+{ id:5, domain:'A', question:"A student asks how 'social preparation' differs from 'awareness raising'. What is the key difference?",
+  choices:["A. No difference at all","B. Social preparation includes organizing, relationship-building and readiness for collective action; awareness is information dissemination","C. Awareness always leads to action automatically","D. Social preparation is just meetings"], answer:1,
+  rationale:"Social preparation builds relationships and readiness for organizing; awareness raising is typically informational and not sufficient alone."},
+
+{ id:6, domain:'A', question:"A barangay organizer plans to work with indigenous groups. Which approach respects their rights and autonomy?",
+  choices:["A. Use only external solutions","B. Consult community protocols, secure FPIC where needed, and co-design interventions","C. Ignore indigenous leadership","D. Impose mainstream programs"], answer:1,
+  rationale:"Respect for indigenous rights requires following community protocols and obtaining free, prior and informed consent (FPIC) when applicable."},
+
+{ id:7, domain:'A', question:"A policy analyst asks why community-level interventions are necessary alongside individual services. What best justifies the community approach?",
+  choices:["A. Communities are irrelevant to individual outcomes","B. Community conditions shape opportunities and constraints; community interventions address structural determinants and sustain change","C. Individual services always suffice","D. Community work is only for advocacy"], answer:1,
+  rationale:"Community interventions tackle structural conditions and social capital, complementing individual-level services for lasting impact."},
+
+{ id:8, domain:'A', question:"You're training workers about 'community resilience'. Which indicator suggests resilience in a barangay after a typhoon?",
+  choices:["A. Long-term paralysis and no local action","B. Rapid mutual aid, local leadership in relief, and adaptive livelihood strategies","C. Total dependence on external aid with no local initiatives","D. No communication among residents"], answer:1,
+  rationale:"Resilience is seen in rapid local mutual aid, leadership and adaptive strategies to recover after shocks."},
+
+{ id:9, domain:'A', question:"A funder wants measurable community 'empowerment'. Which indicator appropriately reflects empowerment?",
+  choices:["A. Number of donor visits","B. Increased community-led initiatives, local decision-making participation, and successful advocacy wins","C. More paid staff only","D. Higher attendance at donor events"], answer:1,
+  rationale:"Empowerment is reflected by community-led action and influence over decisions affecting their lives."},
+
+{ id:10, domain:'A', question:"A social worker must explain 'community capacity building' to local leaders. Which activity fits this concept?",
+  choices:["A. Delivering goods for one-time relief","B. Training local leaders in management, resource mapping and governance to sustain community programs","C. Only administrative reporting to donors","D. Short entertainment events only"], answer:1,
+  rationale:"Capacity building equips local leaders with skills and structures to manage and sustain community initiatives."},
+
+{ id:11, domain:'A', question:"A planner notices weak networks among women’s groups. Which community-strengthening step is appropriate?",
+  choices:["A. Replace local groups with NGOs","B. Facilitate networking meetings, shared learning and joint activities to build linkages and solidarity","C. Ignore their relationships","D. Centralize all decisions externally"], answer:1,
+  rationale:"Facilitating networks and joint activities strengthens social capital and collective capacity."},
+
+{ id:12, domain:'A', question:"A leader requests immediate program rollout without consultation. What is the recommended community practice response?",
+  choices:["A. Proceed without asking anyone","B. Conduct a rapid social investigation, consult stakeholders and adjust plans to community input","C. Cancel the program completely","D. Force implementation"], answer:1,
+  rationale:"Even under time pressure, quick consultation and investigation reduce harms and improve relevance."},
+
+{ id:13, domain:'A', question:"A municipality wants to measure 'community voice'. Which method is appropriate?",
+  choices:["A. Only top-down surveys","B. Participatory forums, citizen scorecards and inclusive stakeholder mapping","C. Replace community meetings with press releases","D. Only use social media metrics"], answer:1,
+  rationale:"Participatory tools capture community voice more authentically than top-down or purely digital metrics."},
+
+{ id:14, domain:'A', question:"A project aims to avoid creating dependency. Which design element helps prevent client dependency?",
+  choices:["A. Unlimited unconditional cash with no capacity-building"], choices:["B. Time-limited support combined with capacity-building, linkages and graduated exit strategies","C. Permanent direct handouts forever","D. Preventing local participation"] , answer:1,
+  rationale:"Combining temporary support with capacity-building and exit strategies reduces long-term dependency."},
+
+{ id:15, domain:'A', question:"A worker evaluates community readiness for a savings group. Which factor is most critical?",
+  choices:["A. Availability of external donors only","B. Social trust among members, basic financial literacy and leadership commitment","C. Number of social media followers","D. Only physical infrastructure"], answer:1,
+  rationale:"Trust, basic skills and leadership commitment determine the viability and sustainability of savings groups."},
+
+/* 16-30 B: Models & Theory in Community Work (15) */
+{ id:16, domain:'B', question:"A team is choosing between a service-delivery model and a social-action model for a coastal fishing community. Which choice is justified if the main issue is land-grabbing affecting livelihoods?",
+  choices:["A. Service-delivery only","B. Social-action/organizing model to build collective advocacy and demand rights to resources","C. Only study the situation forever","D. Ignore community concerns"], answer:1,
+  rationale:"When structural injustice like land-grabbing is central, social-action models strengthen collective advocacy and rights-claiming."},
+
+{ id:17, domain:'B', question:"A facilitator explains the strengths-based model to community volunteers. Which practice embodies this model?",
+  choices:["A. Focus solely on deficits and problems","B. Map assets, highlight local successes and build interventions on existing community capabilities","C. Tell community members what to do without input","D. Replace local resources with external ones"], answer:1,
+  rationale:"Strengths-based practice begins with assets and local capacities rather than deficits to foster empowerment."},
+
+{ id:18, domain:'B', question:"An NGO wants to use the ecosystemic approach. Which analysis should they prioritize?",
+  choices:["A. Only individual attitudes","B. Interactions among individuals, families, institutions and the broader socio-political environment","C. Only historical anecdotes","D. Financial statements only"], answer:1,
+  rationale:"Ecosystemic approaches examine multiple layers of interaction influencing community wellbeing."},
+
+{ id:19, domain:'B', question:"A trainer presents the social goals model of groupwork applied at the community level. Which objective is consistent with this model?",
+  choices:["A. Promote individual therapy only","B. Foster cooperation, reciprocity and democratic participation within the community","C. Focus solely on corporate partnerships","D. Provide one-off entertainment"], answer:1,
+  rationale:"The social goals model seeks collective solidarity and civic engagement as goals of group-based work."},
+
+{ id:20, domain:'B', question:"A community worker considers rights-based vs charity approaches. Which action best demonstrates a rights-based approach?",
+  choices:["A. Distributing food without consultation","B. Facilitating awareness of entitlements and supporting community efforts to claim public services","C. Using charity to silence demands","D. Offering unconditional handouts only"], answer:1,
+  rationale:"Rights-based approaches empower communities to claim entitlements and hold duty-bearers accountable."},
+
+{ id:21, domain:'B', question:"Which community work model emphasizes leadership development and organizational formation?",
+  choices:["A. Remedial therapy model","B. Developmental model that builds local leadership, organizations and capacities","C. Charity distribution model","D. Entertainment model"], answer:1,
+  rationale:"Developmental models focus on long-term leadership and organizational growth for sustained change."},
+
+{ id:22, domain:'B', question:"A participatory action research (PAR) approach is proposed. Which component is essential in PAR?",
+  choices:["A. Researchers decide everything","B. Co-research with community members who help define questions, collect and analyze data","C. Only external experts collect data","D. No community feedback"], answer:1,
+  rationale:"PAR requires active participation of community members in the research cycle to ensure relevance and empowerment."},
+
+{ id:23, domain:'B', question:"A worker discusses the feminist/gender model in community organizing. Which practice aligns with this model?",
+  choices:["A. Reinforce gendered roles","B. Challenge structural gender inequalities and promote women's leadership and voice","C. Exclude women from leadership","D. Use gender-neutral inaction"], answer:1,
+  rationale:"Feminist approaches center gender equity and create spaces for women's agency and leadership in community action."},
+
+{ id:24, domain:'B', question:"A rights-based model demands accountability from local government. Which strategy helps operationalize this model?",
+  choices:["A. Quiet diplomacy only","B. Citizen scorecards, public hearings, and building people’s organizations to demand services","C. Replace local officials unilaterally","D. Only provide services privately"], answer:1,
+  rationale:"Tools like citizen scorecards and public hearings enable communities to demand accountability and improved services."},
+
+{ id:25, domain:'B', question:"A worker wants to combine development and rights models. Which combined element would you include?",
+  choices:["A. Only development projects without participation","B. Capacity-building for livelihoods plus training on legal rights and advocacy tactics","C. Only legal clinics with no skill-building","D. Charity only"], answer:1,
+  rationale:"Combining livelihoods and rights training builds economic resilience and the capacity to claim entitlements."},
+
+{ id:26, domain:'B', question:"A community organization uses an empowerment model. Which indicator best shows empowerment progress?",
+  choices:["A. Reliance on external funding alone","B. Increased local decision-making, mobilized resources, and sustained community-led initiatives","C. Decrease in meetings","D. No local leadership"], answer:1,
+  rationale:"Empowerment is seen when communities take decisions, mobilize resources and sustain their own initiatives."},
+
+{ id:27, domain:'B', question:"A group applies an ecological-systems lens to fisherfolk health. Which intervention fits this lens?",
+  choices:["A. Only clinical treatment of individuals","B. Combine health services with environmental protection, livelihood alternatives and policy advocacy","C. Only social media messages","D. Ignore institutional factors"], answer:1,
+  rationale:"An ecological lens integrates individual health with environment, livelihood and policy contexts."},
+
+{ id:28, domain:'B', question:"A program team is considering a trauma-informed community approach. Which feature is essential?",
+  choices:["A. Blame and public exposure","B. Prioritizing safety, trust-building, choice, collaboration, and cultural sensitivity","C. Re-traumatizing interventions","D. No referral pathways"], answer:1,
+  rationale:"Trauma-informed community work emphasizes safety, trust and culturally sensitive supports to avoid further harm."},
+
+{ id:29, domain:'B', question:"A facilitator wants to use asset-based community development (ABCD). Which starting activity aligns with ABCD?",
+  choices:["A. List only community deficits","B. Map local assets: skills, associations, resources and capacities available in the community","C. Only survey donor needs","D. Outsource all tasks"], answer:1,
+  rationale:"ABCD begins by identifying and mobilizing local assets rather than focusing on needs alone."},
+
+{ id:30, domain:'B', question:"A trainer explains the strengths/empowerment and anti-oppressive frameworks interplay. Which practice reflects both?",
+  choices:["A. Centering professionals' agendas","B. Build on local strengths while actively addressing power imbalances and exclusionary practices","C. Ignore marginalized voices","D. Reinforce status quo"], answer:1,
+  rationale:"Combining strengths and anti-oppressive practice builds capacity while confronting structural exclusion."},
+
+/* 31-55 C: Phases of Community Organizing (25) */
+{ id:31, domain:'C', question:"At social preparation, a community organizer should first do which action?",
+  choices:["A. Immediately implement large projects","B. Conduct social investigation, stakeholder mapping and listen to community priorities","C. Replace local leaders","D. Only produce brochures"], answer:1,
+  rationale:"Social preparation starts with investigation and listening to understand issues and stakeholders before action."},
+
+{ id:32, domain:'C', question:"During leadership development, what activity builds local capacity effectively?",
+  choices:["A. Offer top-down orders from outside","B. Facilitate leadership training, mentoring and opportunities to lead small initiatives","C. Only provide funds without skills","D. Exclude potential leaders"], answer:1,
+  rationale:"Practical training plus mentorship and leadership opportunities develop skills and confidence among local leaders."},
+
+{ id:33, domain:'C', question:"In capability-building, why is participatory training preferred over lecture-only sessions?",
+  choices:["A. Lecture is always better","B. Participatory methods (role-play, practice) increase retention, skills transfer and motivation","C. Participation wastes time","D. Lectures are engaging for everyone"], answer:1,
+  rationale:"Active, participatory methods help adults practice new skills in realistic contexts for better transfer."},
+
+{ id:34, domain:'C', question:"During organizational development, which governance practice supports sustainability?",
+  choices:["A. Concentrate decision-making in a single leader","B. Democratic bylaws, transparent finances and shared responsibilities","C. Hide finances from members","D. Never rotate leadership"], answer:1,
+  rationale:"Transparent governance, distributed responsibilities and clear bylaws enhance organizational accountability and longevity."},
+
+{ id:35, domain:'C', question:"When planning consolidation and expansion, which precaution should groups take?",
+  choices:["A. Expand without assessing capacity","B. Assess organizational capacity, resource needs and ensure core processes can scale","C. Immediately merge with every group","D. Abandon accountability"], answer:1,
+  rationale:"Scaling requires assessment of capacity and systems to ensure quality and sustainability during expansion."},
+
+{ id:36, domain:'C', question:"A core group is forming in a resettlement area. What is the recommended first task?",
+  choices:["A. Host a festival only","B. Clarify group purpose, roles, immediate priorities and meeting rules with participants","C. Register as an NGO immediately","D. Seek large loans before planning"], answer:1,
+  rationale:"Clarifying purpose and roles creates shared expectations and readiness for collective work."},
+
+{ id:37, domain:'C', question:"During social investigation, which data collection method yields rich community narratives?",
+  choices:["A. Only online surveys","B. Focus group discussions and key informant interviews combined with observation","C. Only administrative data","D. Random social media scraping"], answer:1,
+  rationale:"FGDs, KIIs and observation produce contextual insights and community narratives that surveys may miss."},
+
+{ id:38, domain:'C', question:"A group planning session needs to set prioritized actions. Which participatory tool helps prioritize effectively?",
+  choices:["A. Random selection by leaders","B. Problem ranking or pairwise ranking with community members to surface priorities","C. Only external consultant decisions","D. No method used"], answer:1,
+  rationale:"Participatory ranking methods enable collective prioritization based on community perspectives."},
+
+{ id:39, domain:'C', question:"At the implementation phase, what is a key worker role?",
+  choices:["A. Replace community labor entirely","B. Facilitate member-led activities, provide technical support and remove barriers to action","C. Direct every task without local input","D. Only monitor from afar"], answer:1,
+  rationale:"Facilitators support and enable community ownership rather than doing the work for members."},
+
+{ id:40, domain:'C', question:"During consolidation, groups should develop linkages. Which partner usually supports organizational sustainability?",
+  choices:["A. Only donors with short-term grants","B. Local government units, networks of similar organizations and cooperative partners for resource and policy support","C. Only distant international agencies without local ties","D. Unrelated private companies only"], answer:1,
+  rationale:"Local governments and peer networks can provide long-term support, legitimacy and resource access for sustainability."},
+
+{ id:41, domain:'C', question:"In leadership development, why is rotating responsibilities among members valuable?",
+  choices:["A. It weakens leadership","B. It builds broader skills, avoids dependency on one person and fosters collective ownership","C. It makes organization chaotic","D. Only central leadership should exist"], answer:1,
+  rationale:"Rotation builds capacity across members and reduces reliance on a single leader, improving resilience."},
+
+{ id:42, domain:'C', question:"A community plan includes extra-group activities. Which is an example of an extra-group activity?",
+  choices:["A. Internal meeting only","B. Community-led outreach to allied barangays to share best practices","C. Private fundraising solely for staff perks","D. In-group gossip"], answer:1,
+  rationale:"Extra-group activities extend the group's impact and link them to broader networks and audiences."},
+
+{ id:43, domain:'C', question:"At termination of a project, what is a responsible evaluation practice?",
+  choices:["A. No documentation at all","B. Involve members in assessing outcomes, document lessons learned and plan transition steps","C. Only celebrate with leaders and ignore members","D. Delete all records"], answer:1,
+  rationale:"Participatory evaluation and documentation ensure accountability, learning and continuity after project end."},
+
+{ id:44, domain:'C', question:"A core group's initial meeting shows conflict over priorities. How should the organizer respond?",
+  choices:["A. Impose one priority immediately","B. Facilitate open discussion, use consensus or ranking methods and seek common ground","C. Ask members to leave","D. Ignore the conflict"], answer:1,
+  rationale:"Structured facilitation helps transform conflict into negotiated priorities and strengthens buy-in."},
+
+{ id:45, domain:'C', question:"In social preparation, which ethical issue should be considered when selecting a community leader?",
+  choices:["A. Choose only the loudest speaker","B. Ensure transparency in selection, avoid elite capture and include marginalized voices","C. Appoint family members of staff","D. Secretly choose leaders"], answer:1,
+  rationale:"Transparent selection reduces elite capture and promotes representation of marginalized groups."},
+
+{ id:46, domain:'C', question:"During capability-building, which learning assessment confirms skill uptake?",
+  choices:["A. Participant attendance only","B. Observation of applied skills during practice sessions and post-training tasks","C. Only trainer impressions","D. No assessment"], answer:1,
+  rationale:"Demonstrated application of skills in practice is a stronger indicator of learning than attendance alone."},
+
+{ id:47, domain:'C', question:"A local group wants to institutionalize their savings program. Which organizational step is necessary?",
+  choices:["A. Continue informally without records","B. Create bylaws, establish transparent accounting and set basic governance structures","C. Store funds in personal accounts","D. Avoid any documentation"], answer:1,
+  rationale:"Bylaws and transparent accounting provide legitimacy and protect funds when formalizing savings groups."},
+
+{ id:48, domain:'C', question:"A community action requires negotiation with LGU. Which preparation helps the group negotiate effectively?",
+  choices:["A. No preparation and spontaneous visit","B. Collect evidence, prepare community proposals, and identify allies within the LGU","C. Threaten officials publicly immediately","D. Avoid contact with LGU"], answer:1,
+  rationale:"Evidence-based proposals and allies increase the chance of constructive negotiation and outcomes."},
+
+{ id:49, domain:'C', question:"During implementation, attendance drops. Which immediate monitoring question should organizers ask?",
+  choices:["A. How can we punish absentees?","B. What barriers (timing, safety, relevance) prevent attendance and how can we adapt?","C. Cancel the program immediately","D. Ignore the issue"], answer:1,
+  rationale:"Identifying practical barriers enables adaptive changes to restore participation rather than punitive responses."},
+
+{ id:50, domain:'C', question:"A community project seeks to scale. What assessment best informs scaling readiness?",
+  choices:["A. Number of social media posts only","B. Assessment of leadership depth, financial systems, and local demand for expansion","C. Donor enthusiasm only","D. Ignore community capacity"], answer:1,
+  rationale:"Scaling requires leadership capacity, financial management and genuine local demand to be sustainable."},
+
+/* 56-70 D: Tools of Analysis & M&E (15) */
+{ id:51, domain:'D', question:"You are training workers on community mapping. What is the primary benefit of participatory mapping?",
+  choices:["A. It wastes time","B. Produces local spatial knowledge, identifies resources and hazards, and builds ownership","C. Replaces household surveys entirely","D. Only aesthetic value"], answer:1,
+  rationale:"Participatory mapping uncovers local spatial knowledge and builds community ownership of data."},
+
+{ id:52, domain:'D', question:"A community assessment requires both quantitative and qualitative data. Which mixed-method approach is appropriate?",
+  choices:["A. Only focus groups are enough","B. Household surveys for prevalence and FGDs/KIIs for context and narratives","C. Only quantitative data matters","D. No data collection"], answer:1,
+  rationale:"Combining surveys with FGDs and KIIs provides both breadth and depth of understanding."},
+
+{ id:53, domain:'D', question:"When using a Venn diagram in social investigation, what does it typically show?",
+  choices:["A. Budget allocations only","B. Relationship and influence between institutions, organizations and community groups","C. Daily schedules","D. Nothing useful"], answer:1,
+  rationale:"Venn diagrams visualize relational influence and linkages between community actors and institutions."},
+
+{ id:54, domain:'D', question:"A community scorecard is proposed for local health services. Which outcome is expected from its use?",
+  choices:["A. Only donor satisfaction increases","B. Improved service responsiveness due to community feedback and dialogue with providers","C. Reduced community voice","D. Increased secrecy"], answer:1,
+  rationale:"Scorecards create dialogue between users and providers that can improve service responsiveness."},
+
+{ id:55, domain:'D', question:"Which M&E indicator is appropriate to track organizational consolidation?",
+  choices:["A. Number of selfies uploaded","B. Functional governance structures, regular membership meetings and financial transparency","C. Only number of staff hired","D. No indicators"], answer:1,
+  rationale:"Consolidation is shown by governance, meeting regularity and transparent financial practices."},
+
+{ id:56, domain:'D', question:"A baseline survey shows 30% of households lack access to clean water. Which result indicator is appropriate for a 12-month plan?",
+  choices:["A. 'Better water' as vague","B. Increase in households with access to improved water sources from 70% to 85% in 12 months","C. Increase in meetings held only","D. Number of posters printed"], answer:1,
+  rationale:"A specific, measurable indicator (percentage increase) allows tracking concrete progress against baseline."},
+
+{ id:57, domain:'D', question:"During monitoring, you notice data quality issues. Which corrective action is recommended?",
+  choices:["A. Ignore them","B. Retrain data collectors, do spot checks and clarify instrument questions","C. Delete suspicious entries without review","D. Publish data immediately"], answer:1,
+  rationale:"Improving training and spot checks addresses root causes of data quality issues and enhances reliability."},
+
+{ id:58, domain:'D', question:"Which tool helps identify stakeholders' power and interest in a community issue?",
+  choices:["A. Random phone calls only","B. Power-interest grid or stakeholder mapping","C. Only financial audits","D. None"], answer:1,
+  rationale:"Power-interest grids visually classify stakeholders for strategy and engagement planning."},
+
+{ id:59, domain:'D', question:"A community-led evaluation must be inclusive. What method supports inclusion of marginalized voices?",
+  choices:["A. Large town-hall dominated by elites","B. Small group discussions, targeted outreach and confidential feedback mechanisms","C. Exclusive leadership interviews only","D. Only online surveys"], answer:1,
+  rationale:"Targeted small groups and confidential methods ensure marginalized members can express views safely."},
+
+{ id:60, domain:'D', question:"A team wants rapid feedback to improve sessions. Which low-cost monitoring method can be used each session?",
+  choices:["A. Long formal surveys","B. Session scorecards or 'thumbs-up/thumbs-down' quick checks and short reflection notes","C. No feedback at all","D. Only annual reports"], answer:1,
+  rationale:"Simple session-level feedback provides immediate insights to adapt facilitation and content."},
+
+{ id:61, domain:'D', question:"When evaluating advocacy efforts, which outcome is meaningful to track?",
+  choices:["A. Number of flyers distributed only","B. Policy changes, adoption of resolutions, or increased budget allocation influenced by advocacy","C. Attendance at meetings alone","D. Photos taken"], answer:1,
+  rationale:"Advocacy success is shown by concrete policy or resource changes attributable to community action."},
+
+{ id:62, domain:'D', question:"A participatory monitoring system includes community enumerators. What safeguard improves data integrity?",
+  choices:["A. No supervision needed","B. Training, cross-checks and rotating enumerators to reduce bias and collusion","C. Only allow one enumerator per community","D. Publish raw names"], answer:1,
+  rationale:"Training and cross-checks help maintain objectivity and reliability in participatory data collection."},
+
+{ id:63, domain:'D', question:"Which qualitative tool is best for exploring community narratives about historical conflict?",
+  choices:["A. Short multiple-choice survey only","B. Oral history interviews and timeline exercises with elders and key informants","C. Only photos without interviews","D. Quick polls"], answer:1,
+  rationale:"Oral histories and timelines capture depth and sequence in community memories about conflict."},
+
+{ id:64, domain:'D', question:"A community wants to track beneficiary satisfaction discreetly. Which method respects confidentiality?",
+  choices:["A. Public suggestion box with names required","B. Anonymous feedback forms or confidential hotlines with results aggregated","C. Ask participants to present critiques publicly","D. Publish individual complaints"], answer:1,
+  rationale:"Anonymous channels allow candid feedback while protecting individual privacy and safety."},
+
+/* 71-80 E: Community Organizer Roles & Skills (10) */
+{ id:65, domain:'E', question:"A novice organizer must build rapport quickly in a new sitio. Which first step is recommended?",
+  choices:["A. Immediately offer large funds","B. Spend time listening, attend informal gatherings and show genuine interest in people's lives","C. Announce programs without listening","D. Take immediate photographs for donors"], answer:1,
+  rationale:"Listening and presence build trust faster than transactions or top-down announcements."},
+
+{ id:66, domain:'E', question:"During facilitation a heated argument erupts. Which facilitation skill helps restore constructive dialogue?",
+  choices:["A. Take sides with a dominant member","B. Use conflict mediation skills: validate feelings, set rules for respect and help reframe issues","C. Ignore and continue","D. Silence everyone harshly"], answer:1,
+  rationale:"Mediation skills and rule-setting channel emotional energy into constructive problem-solving."},
+
+{ id:67, domain:'E', question:"An organizer must mentor core group leaders. Which mentoring action is most effective?",
+  choices:["A. Do tasks for them","B. Model facilitation, co-facilitate sessions and debrief to transfer skills gradually","C. Only criticize mistakes in public","D. Avoid contact with new leaders"], answer:1,
+  rationale:"Modeling and coached practice with reflective debriefing are effective mentoring techniques."},
+
+{ id:68, domain:'E', question:"Which attribute is most important for community organizers working in conflict-affected areas?",
+  choices:["A. Rigid adherence to a single plan","B. Cultural humility, neutrality, and capacity to build local safeguards and trust","C. Quick imposition of external solutions","D. Publicizing sensitive details"], answer:1,
+  rationale:"Cultural humility and neutrality help organizers navigate tensions and build protective relationships."},
+
+{ id:69, domain:'E', question:"You teach participatory facilitation. Which practice ensures equitable participation in group sessions?",
+  choices:["A. Let the loudest speak all the time","B. Use round-robin, small group breakouts and structured turn-taking methods","C. Ignore silent members","D. Only ask leadership to speak"], answer:1,
+  rationale:"Structured turn-taking and small groups allow quieter members to contribute safely and meaningfully."},
+
+{ id:70, domain:'E', question:"A community organizer must mobilize volunteers for a clean-up campaign. Which motivational technique is effective?",
+  choices:["A. Threaten volunteers with penalties","B. Link activities to visible community benefits, recognize contributions and match tasks to skills","C. Force volunteers to attend","D. Keep tasks unspecified"], answer:1,
+  rationale:"Clear purpose, recognition and role-fit motivate volunteer engagement sustainably."},
+
+{ id:71, domain:'E', question:"An organizer faces resistance from a local elite. Which strategy can reduce elite capture?",
+  choices:["A. Agree to all elite demands","B. Build broad-based alliances, ensure transparency and give marginalized voices platforms","C. Exclude elites completely always","D. Avoid dealing with elites"], answer:1,
+  rationale:"Broad alliances and transparency reduce the risk of resources being dominated by local elites."},
+
+{ id:72, domain:'E', question:"A community organizer needs to document a conflict situation for supervision. Which note is most useful?",
+  choices:["A. Emotional commentary and speculation","B. Objective description of events, actions taken, members involved and recommended steps for follow-up","C. Gossip only","D. No record"], answer:1,
+  rationale:"Objective, factual notes provide supervisors with enough detail to support decision-making and accountability."},
+
+{ id:73, domain:'E', question:"Which listening technique helps organizers elicit unspoken needs in community meetings?",
+  choices:["A. Interrupting frequently","B. Reflective listening and asking open-ended questions to probe underlying concerns","C. Only closed yes/no questions","D. Dominating the conversation"], answer:1,
+  rationale:"Open-ended and reflective techniques reveal deeper motivations and unspoken issues."},
+
+{ id:74, domain:'E', question:"A facilitator must manage time effectively in a community workshop. Which planning tactic helps?",
+  choices:["A. Add many untested activities","B. Prioritize core objectives, prepare time-boxed activities and use a visible agenda","C. Leave schedule open-ended","D. Ignore participant input on timing"], answer:1,
+  rationale:"Clear objectives and time-boxed activities keep workshops focused and respectful of participants’ time."},
+
+/* 81-90 F: Community Education & Training (10) */
+{ id:75, domain:'F', question:"Designing a training for community trainers, which adult learning principle is essential?",
+  choices:["A. Lecture for 6 hours straight","B. Use problem-centered, experiential, and participatory methods relevant to trainees' contexts","C. Ignore trainees' experience","D. Use complex academic jargon only"], answer:1,
+  rationale:"Adult learners benefit most from experiential, problem-based and context-relevant methods."},
+
+{ id:76, domain:'F', question:"A training on gender-sensitive facilitation is planned. Which component should be included?",
+  choices:["A. Avoid discussing gender","B. Gender analysis exercises, inclusive language practice and role-plays addressing bias","C. Only statistics without practice","D. Punitive measures for participants"], answer:1,
+  rationale:"Practice exercises and analysis foster real shifts in facilitation behavior beyond theoretical knowledge."},
+
+{ id:77, domain:'F', question:"A trainer develops a module for disaster preparedness. Which methodology encourages community ownership?",
+  choices:["A. Top-down lectures only","B. Participatory hazard mapping, local contingency planning and drills led by residents","C. Invite external trainers only","D. Conduct assessments without community participation"], answer:1,
+  rationale:"Participatory mapping and resident-led planning build ownership and practical readiness for disasters."},
+
+{ id:78, domain:'F', question:"Which evaluation technique shows whether trainees can apply skills after training?",
+  choices:["A. Immediate satisfaction survey only","B. Follow-up assessment and observed practice in the field (behavioral demonstration)","C. Only multiple-choice test in classroom","D. No post-training checks"], answer:1,
+  rationale:"Follow-up observation in real settings demonstrates whether training transfers to everyday practice."},
+
+{ id:79, domain:'F', question:"A training uses mixed media for low-literacy audiences. Which material choice is appropriate?",
+  choices:["A. Dense manuals only","B. Pictures, role-plays, dramatizations and visual job aids accessible to low-literacy participants","C. Only long written handouts","D. Complex academic charts"], answer:1,
+  rationale:"Visual and participatory media allow low-literacy participants to engage and learn effectively."},
+
+{ id:80, domain:'F', question:"A trainer ensures gender-inclusive participation. Which logistical step supports inclusion?",
+  choices:["A. Schedule sessions during working hours only","B. Provide childcare, flexible timings and safe venues to enable diverse attendance","C. Choose inaccessible locations","D. Ignore transport barriers"], answer:1,
+  rationale:"Childcare, flexible scheduling and safe access remove common barriers to participation, especially for caregivers."},
+
+{ id:81, domain:'F', question:"Which monitoring element is useful during training roll-out across barangays?",
+  choices:["A. Only trainee selfies","B. Trainer checklists, session observations and short participant feedback forms","C. No monitoring","D. Only end-of-year reports"], answer:1,
+  rationale:"Trainer checklists and quick feedback enable course correction and quality assurance across multiple sites."},
+
+{ id:82, domain:'F', question:"A community training module should reflect local culture. Which adaptation is good practice?",
+  choices:["A. Use only foreign case studies","B. Incorporate local examples, languages and culturally relevant scenarios","C. Exclude local metaphors","D. Ignore cultural differences"], answer:1,
+  rationale:"Culturally tailored content increases relevance and comprehension for participants."},
+
+{ id:83, domain:'F', question:"A trainer sees low engagement in a module. Which immediate tactic can reinvigorate the session?",
+  choices:["A. Continue with the same lecture speed","B. Introduce an interactive exercise or small group activity to re-engage participants","C. End the session prematurely","D. Penalize participants"], answer:1,
+  rationale:"Interactive activities re-energize learning and increase participation when attention wanes."},
+
+{ id:84, domain:'F', question:"A training plan includes mentor support after the workshop. Why is post-training mentorship important?",
+  choices:["A. It isn't important","B. Mentorship supports application of skills, troubleshooting and consolidating learning in practice","C. It replaces the need for training","D. It only increases costs without benefit"], answer:1,
+  rationale:"Mentorship bridges the gap between workshop learning and practical application, improving long-term uptake."},
+
+/* 91-100 G: Field Instruction III & Organizational Development (10) */
+{ id:85, domain:'G', question:"A field instructor asks students to prepare a one-page plan for community social preparation. Which element must be included?",
+  choices:["A. Only personal opinions","B. Objectives, stakeholders to consult, methods of engagement and ethical safeguards","C. Unrelated anecdotes","D. No timeline"], answer:1,
+  rationale:"A concise plan should state objectives, stakeholders, methods and protections for ethical community entry."},
+
+{ id:86, domain:'G', question:"A practicum student documents capacity-building outcomes. Which evidence is the strongest for skill acquisition?",
+  choices:["A. Attendance sheets only","B. Recorded demonstrations, participant portfolios and post-training field application reports","C. Photos without context","D. Only trainer comments"], answer:1,
+  rationale:"Productive demonstrations and applied reports show real skill transfer beyond mere attendance."},
+
+{ id:87, domain:'G', question:"During organizational consolidation a group requests technical assistance. Which assistance is capacity-enhancing?",
+  choices:["A. Do the accounting for them permanently","B. Train their treasurer in bookkeeping and set up simple accounting templates","C. Take control of their accounts","D. Provide only a one-time fund with no support"], answer:1,
+  rationale:"Training and user-friendly tools build lasting management capacity rather than creating dependency."},
+
+{ id:88, domain:'G', question:"A community network seeks to advocate for better waste services. Which joint strategy strengthens their advocacy?",
+  choices:["A. Competing agendas among groups","B. Create a joint evidence dossier, mobilize constituent stories and use coordinated meetings with LGU officials","C. Only send letters without follow-up","D. Avoid networking"], answer:1,
+  rationale:"Coordinated evidence and joint meetings increase leverage and clarity in municipal advocacy."},
+
+{ id:89, domain:'G', question:"A student must prepare supervision notes after field facilitation. Which reflection is most valuable?",
+  choices:["A. 'It was fine' only","B. What happened, facilitators' decisions, member responses, dilemmas encountered and supervisory questions","C. Gossip about participants","D. Irrelevant content"], answer:1,
+  rationale:"Structured reflection informs supervision and helps improve facilitation practice and decisions."},
+
+{ id:90, domain:'G', question:"An NGO wants to support community consolidation with small grants. What grant feature promotes local ownership?",
+  choices:["A. Large, unconditional funding only for staff consumption","B. Small, flexible grants with community co-design, reporting training and participatory budgeting","C. Grants whose terms are opaque","D. Funding only if leaders sign over control"], answer:1,
+  rationale:"Flexible co-designed grants combined with capacity-building encourage local ownership and accountable use."},
+
+{ id:91, domain:'G', question:"A practicum assignment requires students to practice facilitation. Which supervisory arrangement best supports learning?",
+  choices:["A. No supervision at all","B. Pre-brief, observe with checklist, and conduct post-session reflective debrief with feedback","C. Publicly criticize students without guidance","D. Leave students alone entirely"], answer:1,
+  rationale:"Structured observation and reflective feedback accelerate skill development and safe practice."},
+
+{ id:92, domain:'G', question:"A community reports problem duplication across NGOs. Which coordination mechanism reduces overlap?",
+  choices:["A. Secretive programming","B. Regular coordination forums, shared mapping of interventions and joint planning","C. Competing for the same clients without coordination","D. No information sharing"], answer:1,
+  rationale:"Coordination forums and shared maps promote complementarity and reduce duplication of effort."},
+
+{ id:93, domain:'G', question:"A group plans sustainability beyond donor funding. Which income strategy is realistic for a small community organization?",
+  choices:["A. Sole reliance on one donor forever","B. Diverse small income streams: local contributions, social enterprise, membership fees and occasional grants","C. Expect unlimited state funding without plan","D. Only fundraising galas"], answer:1,
+  rationale:"Diversified local income sources reduce vulnerability to single-funder shocks and increase resilience."},
+
+{ id:94, domain:'G', question:"During field instruction, students are taught ethical documentation. Which file practice is essential?",
+  choices:["A. Keep all client names in public spreadsheets","B. Anonymize case details, secure storage and limit access to authorized supervisors","C. Share notes on social media","D. Keep no records"], answer:1,
+  rationale:"Anonymization and secure access protect client confidentiality and meet ethical standards in documentation."},
+
+{ id:95, domain:'G', question:"A community organization seeks to scale peer mentoring. Which step fosters quality while expanding?",
+  choices:["A. Rapid unchecked expansion","B. Develop a mentor training curriculum, supervision system and phased scale-up with monitoring","C. Hire random mentors without training","D. Stop monitoring"], answer:1,
+  rationale:"Training, supervision and phased scaling preserve quality while expanding mentoring models."},
+
+{ id:96, domain:'G', question:"A consolidation workshop aims to institutionalize processes. Which deliverable indicates institutionalization?",
+  choices:["A. Only verbal promises","B. Standard operating procedures, role descriptions and simple monitoring templates adopted by the group","C. Only celebratory photos","D. No concrete outputs"], answer:1,
+  rationale:"Documented SOPs and role descriptions demonstrate organizational systems beyond informal practices."},
+
+{ id:97, domain:'G', question:"A practicum requires students to facilitate a community meeting. Which safety planning should they include?",
+  choices:["A. No safety plan required","B. Risk assessment, communication protocols, safe venue selection and emergency contacts","C. Rely only on chance","D. Ignore conflict risks"], answer:1,
+  rationale:"Safety planning protects participants and facilitators and prepares for potential emergencies or conflicts."},
+
+{ id:98, domain:'G', question:"An organization wants to document success stories ethically. Which practice respects clients?",
+  choices:["A. Publish full names and photos without consent","B. Obtain informed consent, anonymize when needed and focus on client dignity in storytelling","C. Fabricate stories for donors","D. Share identifiable details publicly"], answer:1,
+  rationale:"Ethical storytelling requires consent and protection of identity to avoid exploitation and harm."},
+
+{ id:99, domain:'G', question:"A student asks how to measure 'social capital' in a community. Which proxy indicators are appropriate?",
+  choices:["A. Only number of houses","B. Membership in local associations, frequency of mutual aid acts and trust survey items","C. Only the number of shops","D. Only road length"], answer:1,
+  rationale:"Associational membership, mutual aid frequency and trust items provide meaningful proxies for social capital."},
+
+{ id:100, domain:'G', question:"A final reflection: which attitude is most important for community practice?",
+  choices:["A. Know-it-all certainty","B. Humility, curiosity, respect and willingness to learn from communities","C. Avoid questioning one's methods","D. Impose rigid frameworks always"], answer:1,
+  rationale:"Humility and curiosity enable respectful, context-sensitive practice that learns from communities themselves."}
+];
+
+/* Domain labels for UI */
+const DOMAIN_LABELS = {
+  'A':'Foundations & Community Concepts',
+  'B':'Models & Theory in Community Work',
+  'C':'Phases of Community Organizing',
+  'D':'Tools of Analysis & M&E',
+  'E':'Community Organizer Roles & Skills',
+  'F':'Community Education & Training',
+  'G':'Field Instruction III & Organizational Development'
+};
+
+/* App state & DOM refs */
+let pool = [];
+let currentSet = [];
+let userAnswers = {};
+let currentIndex = 0;
+let totalToTake = 100;
+let timerMode = 'elapsed';
+let timerInterval = null;
+let startTime = null;
+let paused = false;
+let elapsedSeconds = 0;
+let countdownSeconds = 0;
+
+/* DOM elements */
+const startBtn = document.getElementById('startBtn');
+const numItemsEl = document.getElementById('numItems');
+const domainFilterEl = document.getElementById('domainFilter');
+const timerModeEl = document.getElementById('timerMode');
+const countdownInput = document.getElementById('countdownInput');
+const countdownMins = document.getElementById('countdownMins');
+
+const quizCard = document.getElementById('quizCard');
+const qText = document.getElementById('qText');
+const choicesEl = document.getElementById('choices');
+const qDomainText = document.getElementById('qDomainText');
+const domainBadge = document.getElementById('domainBadge');
+
+const currentIndexEl = document.getElementById('currentIndex');
+const totalIndexEl = document.getElementById('totalIndex');
+const answeredCountEl = document.getElementById('answeredCount');
+const remainingCountEl = document.getElementById('remainingCount');
+const timerDisplay = document.getElementById('timerDisplay');
+const pauseBtn = document.getElementById('pauseBtn');
+const quitBtn = document.getElementById('quitBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+const resultCard = document.getElementById('resultCard');
+const overallScoreEl = document.getElementById('overallScore');
+const overallTotalEl = document.getElementById('overallTotal');
+const timeSpentEl = document.getElementById('timeSpent');
+const domainBreakdownEl = document.getElementById('domainBreakdown');
+const reviewListEl = document.getElementById('reviewList');
+const summaryGridEl = document.getElementById('summaryGrid');
+const restartBtn = document.getElementById('restartBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const showKeyBtn = document.getElementById('showKeyBtn');
+const answerKeyArea = document.getElementById('answerKeyArea');
+const answerKeyDiv = document.getElementById('answerKey');
+
+/* Utilities */
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]] = [array[j],array[i]];
+  }
+  return array;
+}
+function formatTime(s){
+  const h = Math.floor(s/3600); s%=3600;
+  const m = Math.floor(s/60); const sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+/* Load pool based on domain */
+function loadPool(){
+  const domain = domainFilterEl.value;
+  pool = (domain === 'ALL') ? [...QUESTIONS] : QUESTIONS.filter(q=>q.domain===domain);
+}
+
+/* Start quiz */
+startBtn.addEventListener('click', ()=>{
+  loadPool();
+  const selected = numItemsEl.value;
+  if(selected === 'All') totalToTake = pool.length;
+  else totalToTake = parseInt(selected,10);
+  if(totalToTake > pool.length){
+    alert(`Only ${pool.length} questions available for selected domain. Using ${pool.length} instead.`);
+    totalToTake = pool.length;
+  }
+  timerMode = timerModeEl.value;
+  if(timerMode === 'countdown'){
+    countdownSeconds = Math.max(60, parseInt(countdownMins.value,10) * 60);
+  }
+  initQuiz();
+});
+
+/* Timer UI toggle */
+timerModeEl.addEventListener('change', ()=>{
+  if(timerModeEl.value === 'countdown') countdownInput.style.display = 'inline-block';
+  else countdownInput.style.display = 'none';
+});
+
+/* Initialize quiz set and timer */
+function initQuiz(){
+  userAnswers = {};
+  currentIndex = 0;
+  elapsedSeconds = 0;
+  paused = false;
+  startTime = Date.now();
+  currentSet = shuffle(pool.slice()).slice(0,totalToTake);
+  currentSet = currentSet.map(q=>{
+    const choices = q.choices.map((c,i)=>({c,i}));
+    shuffle(choices);
+    const newIndex = choices.findIndex(x=>x.i===q.answer);
+    return {...q, _shuffledChoices: choices.map(x=>x.c), _shuffledAnswerIndex: newIndex};
+  });
+  document.getElementById('totalIndex').textContent = currentSet.length;
+  domainBadge.textContent = (domainFilterEl.value==='ALL') ? 'ALL DOMAINS' : DOMAIN_LABELS[domainFilterEl.value];
+  document.getElementById('setupCard').classList?.add('hide');
+  quizCard.classList.remove('hide');
+  resultCard.classList.add('hide');
+  answerKeyArea.classList.add('hide');
+  showQuestion(0);
+  if(timerInterval) clearInterval(timerInterval);
+  if(timerMode === 'elapsed'){
+    timerDisplay.textContent = formatTime(0);
+    timerInterval = setInterval(()=>{ if(!paused){ elapsedSeconds++; timerDisplay.textContent = formatTime(elapsedSeconds); } },1000);
+  } else if(timerMode === 'countdown'){
+    timerDisplay.textContent = formatTime(countdownSeconds);
+    timerInterval = setInterval(()=>{
+      if(!paused){
+        if(countdownSeconds<=0){ submitQuiz(); clearInterval(timerInterval); }
+        else{ countdownSeconds--; timerDisplay.textContent = formatTime(countdownSeconds); elapsedSeconds++; }
+      }
+    },1000);
+  } else {
+    timerDisplay.textContent = 'No timer';
+  }
+}
+
+/* Show question */
+function showQuestion(idx){
+  if(idx<0) idx=0; if(idx>=currentSet.length) idx=currentSet.length-1;
+  currentIndex = idx;
+  const q = currentSet[idx];
+  currentIndexEl.textContent = idx+1;
+  qText.textContent = q.question;
+  qDomainText.textContent = DOMAIN_LABELS[q.domain];
+  choicesEl.innerHTML = '';
+  q._shuffledChoices.forEach((text,i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `<div class="label">${'ABCD'[i]}</div><div style="flex:1">${text}</div>`;
+    if(userAnswers[q.id] && userAnswers[q.id].choice===i){
+      btn.style.borderColor = '#c7f0d7'; btn.style.background = '#f0fff4';
+    }
+    btn.addEventListener('click', ()=> handleAnswer(q, i));
+    choicesEl.appendChild(btn);
+  });
+  const answered = Object.keys(userAnswers).length;
+  answeredCountEl.textContent = answered;
+  remainingCountEl.textContent = (currentSet.length - answered);
+  prevBtn.disabled = (idx===0);
+  nextBtn.disabled = (idx===currentSet.length-1);
+}
+
+/* Handle answer */
+function handleAnswer(q, choiceIndex){
+  const t = Math.floor((Date.now()-startTime)/1000);
+  userAnswers[q.id] = {choice: choiceIndex, answeredAt: t};
+  saveAndAdvance();
+}
+
+/* Save & auto-advance */
+function saveAndAdvance(){
+  showQuestion(currentIndex);
+  if(currentIndex < currentSet.length-1){
+    currentIndex++;
+    showQuestion(currentIndex);
+  } else {
+    if(Object.keys(userAnswers).length === currentSet.length){
+      submitQuiz();
+    } else {
+      for(let i=0;i<currentSet.length;i++){
+        if(!userAnswers[currentSet[i].id]){ showQuestion(i); return; }
+      }
+      submitQuiz();
+    }
+  }
+}
+
+/* Prev/Next buttons */
+prevBtn.addEventListener('click', ()=>{ if(currentIndex>0) showQuestion(currentIndex-1); });
+nextBtn.addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1) showQuestion(currentIndex+1); });
+
+/* Pause/quit */
+pauseBtn.addEventListener('click', ()=>{ paused = !paused; pauseBtn.textContent = paused ? 'Resume' : 'Pause'; });
+quitBtn.addEventListener('click', ()=>{ if(confirm('Quit the quiz? Your answers will be submitted.')) submitQuiz(); });
+
+/* Submit & compute results */
+function submitQuiz(){
+  if(timerInterval) clearInterval(timerInterval);
+  const results = currentSet.map(q=>{
+    const user = userAnswers[q.id];
+    const selectedIndex = user ? user.choice : null;
+    const correctIndex = q._shuffledAnswerIndex;
+    const correct = (selectedIndex === correctIndex);
+    return { id:q.id, text:q.question, domain:q.domain, choices:q._shuffledChoices, selectedIndex, correctIndex, correct, rationale:q.rationale };
+  });
+  const total = results.length;
+  const correctCount = results.filter(r=>r.correct).length;
+  displayResults(results, correctCount, total);
+}
+
+/* Display results */
+function displayResults(results, correctCount, total){
+  quizCard.classList.add('hide');
+  resultCard.classList.remove('hide');
+  overallScoreEl.textContent = correctCount;
+  overallTotalEl.textContent = total;
+  timeSpentEl.textContent = formatTime(elapsedSeconds);
+  const domains = {};
+  results.forEach(r=>{
+    if(!domains[r.domain]) domains[r.domain] = {total:0,correct:0};
+    domains[r.domain].total++; if(r.correct) domains[r.domain].correct++;
+  });
+  domainBreakdownEl.innerHTML = '';
+  for(const d of Object.keys(DOMAIN_LABELS)){
+    if(domains[d]){
+      const t = domains[d].total, c = domains[d].correct;
+      const el = document.createElement('div'); el.className='tile';
+      el.innerHTML = `<strong>${DOMAIN_LABELS[d]}</strong><div class="small">Score: ${c}/${t} (${Math.round(c/t*100)}%)</div>`;
+      domainBreakdownEl.appendChild(el);
+    }
+  }
+  summaryGridEl.innerHTML = '';
+  const overallTile = document.createElement('div'); overallTile.className='tile';
+  overallTile.innerHTML = `<strong>Overall</strong><div class="small">${correctCount}/${total} (${Math.round(correctCount/total*100)}%)</div>`;
+  summaryGridEl.appendChild(overallTile);
+  reviewListEl.innerHTML = '';
+  results.forEach((r,idx)=>{
+    const wrapper = document.createElement('div'); wrapper.style.padding='10px'; wrapper.style.borderBottom='1px solid #f1f5f9';
+    const qnum = idx+1;
+    const userLabel = r.selectedIndex==null ? '<em>Unanswered</em>' : 'Your answer: <strong>' + 'ABCD'[r.selectedIndex] + '</strong>';
+    const correctLabel = 'Correct: <strong class="'+(r.correct?'correct':'incorrect')+'">' + 'ABCD'[r.correctIndex] + '</strong>';
+    wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="domain-badge">${DOMAIN_LABELS[r.domain]}</span> Q${qnum}: ${r.text}</div><div style="font-size:13px">${userLabel} · ${correctLabel}</div></div>
+      <div style="margin-top:8px">Choices:</div>
+      <div style="margin-top:6px">${r.choices.map((c,i)=>'<div style="font-size:13px"><strong>'+ 'ABCD'[i] +'.</strong> '+ c + (i===r.correctIndex ? ' <span class="correct">✔</span>' : '') + '</div>').join('')}</div>
+      <div class="rationale"><em>Rationale:</em> ${r.rationale}</div>`;
+    reviewListEl.appendChild(wrapper);
+  });
+}
+
+/* Restart & download */
+restartBtn.addEventListener('click', ()=>{ document.getElementById('setupCard').classList.remove('hide'); resultCard.classList.add('hide'); answerKeyArea.classList.add('hide'); window.scrollTo(0,0); });
+downloadBtn.addEventListener('click', ()=>{
+  const data = { timestamp: new Date().toISOString(), domain: domainFilterEl.value, totalAsked: currentSet.length, answers: userAnswers };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='practice3_quiz_results.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* Show Answer Key */
+showKeyBtn.addEventListener('click', ()=>{
+  // Build key sorted by question id 1..100 from original bank
+  let keyLines = [];
+  // Map original QUESTIONS by id to retrieve correct letter from original (non-shuffled) ordering
+  const qById = {};
+  QUESTIONS.forEach(q=> qById[q.id] = q);
+  for(let i=1;i<=QUESTIONS.length;i++){
+    const q = qById[i];
+    if(!q) continue;
+    const letter = 'ABCD'[q.answer];
+    keyLines.push(`Q${q.id.toString().padStart(2,'0')}: ${letter} — ${q.choices[q.answer]}  \nRationale: ${q.rationale}`);
+  }
+  answerKeyDiv.textContent = keyLines.join('\n\n');
+  answerKeyArea.classList.remove('hide');
+  answerKeyArea.scrollIntoView({behavior:'smooth'});
+});
+
+/* default */
+(function(){ domainFilterEl.value='ALL'; numItemsEl.value='100'; timerModeEl.value='elapsed'; })();
+
+</script>
+</body>
+</html>
